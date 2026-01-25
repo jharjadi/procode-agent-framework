@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: procode-postgres
+    environment:
+      POSTGRES_DB: procode
+      POSTGRES_USER: procode_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U procode_user -d procode"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - procode-network
+
+  # Procode Agent
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: procode-agent
+    environment:
+      # Database
+      DATABASE_URL: postgresql://procode_user:${POSTGRES_PASSWORD:-changeme}@postgres:5432/procode
+      USE_DATABASE: "true"
+      DB_POOL_SIZE: 10
+      DB_MAX_OVERFLOW: 20
+      
+      # LLM API Keys (pass from host environment)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      
+      # Configuration
+      USE_LLM_INTENT: "true"
+      CONVERSATION_WINDOW_SIZE: 10
+      
+      # GitHub (optional)
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      GITHUB_REPO: ${GITHUB_REPO}
+      USE_REAL_TOOLS: ${USE_REAL_TOOLS:-false}
+    ports:
+      - "9998:9998"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    networks:
+      - procode-network
+    restart: unless-stopped
+
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: procode-frontend
+    environment:
+      NEXT_PUBLIC_AGENT_URL: http://agent:9998
+    ports:
+      - "3000:3000"
+    depends_on:
+      - agent
+    networks:
+      - procode-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  procode-network:
+    driver: bridge
