@@ -1,240 +1,202 @@
-# Procode Agent Framework (A2A-ready)
+# Procode Agent Framework
 
-A production-style agent framework demonstrating:
-- **Streaming responses** for real-time feedback
-- **LLM-based intent classification** with multi-provider support
-- **💰 Cost-optimized multi-LLM strategy** (85-98% cost savings)
-- **Conversation memory** for multi-turn dialogues
-- **Real tool integration** with GitHub Issues API
-- Principal agent routing
-- Task agents (tickets, account, payments)
-- Hybrid tools (mocked/real)
-- Input/output guardrails
-- Comprehensive test coverage
+A production-ready, multi-agent system built on the A2A (Agent-to-Agent) protocol, demonstrating advanced AI capabilities with enterprise-grade features.
 
-## 💰 Cost Optimization (NEW!)
+**Status**: Active Development | Currently at Step 10 of 25 | [View Roadmap](docs/PRODUCTION_ROADMAP.md)
 
-**Reduce your LLM costs by 85-98%** without sacrificing quality! The framework now includes a multi-LLM strategy specifically optimized for intent classification.
+## What Makes This Different
 
-### Quick Cost Comparison (10,000 requests/day)
+This isn't just another chatbot wrapper. It's a comprehensive framework that solves real production challenges:
 
-| Strategy | Monthly Cost | Annual Savings |
-|----------|--------------|----------------|
-| Current (Claude Sonnet) | $225 | Baseline |
-| **Claude Haiku** | $19 | **$2,475** ✨ |
-| **Multi-LLM Strategy** | $6 | **$2,628** 🚀 |
-| **Ollama (Local)** | $0 | **$2,700** 💎 |
+- **Cost Optimization**: Reduce LLM costs by 98% through intelligent model routing
+- **Database Persistence**: Full conversation and audit trail storage (SQLite/PostgreSQL)
+- **Multi-LLM Strategy**: Automatically route requests to the most cost-effective model
+- **Production Security**: Enhanced guardrails, PII detection, rate limiting, audit logging
+- **Real-time Streaming**: Server-Sent Events for responsive user experience
+- **Agent-to-Agent Communication**: Built on the A2A protocol for multi-agent workflows
 
-### Three Implementation Options
+## Current Capabilities (Step 10/25)
 
-1. **Quick Win (5 min)** - Switch to Claude Haiku → 92% savings
-2. **Best ROI (30 min)** - Use Multi-LLM Classifier → 98% savings
-3. **Zero Cost (1 hour)** - Use Ollama locally → 100% savings
+### Core Features
+- **Intent Classification**: LLM-based with deterministic fallback (Anthropic, OpenAI, Google)
+- **Conversation Memory**: Multi-turn dialogues with context awareness
+- **Database Layer**: SQLAlchemy ORM with Alembic migrations
+- **Cost Tracking**: Per-message cost calculation and analytics
+- **Audit Logging**: Dual persistence (files + database) for compliance
+- **Streaming Responses**: Real-time SSE with progress indicators
+- **Tool Integration**: GitHub Issues API with hybrid mocked/real modes
 
-### Documentation
+### Security & Compliance
+- Input/output guardrails with PII detection
+- Rate limiting and circuit breaker patterns
+- Comprehensive audit trail
+- GDPR compliance features
 
-- 📊 **[Cost Optimization Summary](docs/COST_OPTIMIZATION_SUMMARY.md)** - Quick reference with cost comparisons
-- 📈 **[Multi-LLM Strategy](docs/MULTI_LLM_STRATEGY.md)** - Detailed strategy and recommendations
-- 🛠️ **[Implementation Guide](docs/IMPLEMENTATION_GUIDE.md)** - Step-by-step implementation
-- 🧪 **[Test Suite](test_multi_llm.py)** - Run `python test_multi_llm.py` to see it in action
+### Developer Experience
+- Interactive console app with rich UI
+- Streamlit and Next.js web interfaces
+- Comprehensive test suite
+- Makefile for common operations
+- Extensive documentation
 
-**Start saving today!** See the [Cost Optimization Summary](docs/COST_OPTIMIZATION_SUMMARY.md) for details.
-
-## Quick Start with Makefile 🚀
-
-The easiest way to work with this project is using the included Makefile:
+## Quick Start
 
 ```bash
-# Show all available commands
-make help
-
 # Install dependencies
 make install
-
-# Setup development environment
-make dev
 
 # Start the agent server
 make start
 
-# Run interactive console (in another terminal)
+# In another terminal, run the interactive console
 make console
+```
 
-# Run tests
-make test
+That's it. The agent works out of the box with deterministic matching. Add an API key for LLM-powered intent classification.
+
+## Cost Optimization
+
+One of the framework's key innovations is intelligent cost optimization:
+
+| Strategy | Cost per 10K requests/day | Annual Savings |
+|----------|---------------------------|----------------|
+| Claude Sonnet (baseline) | $225/month | - |
+| Claude Haiku | $19/month | $2,475/year |
+| **Multi-LLM Strategy** | **$6/month** | **$2,628/year** |
+| Ollama (local) | $0/month | $2,700/year |
+
+The multi-LLM classifier automatically routes simple queries (greetings, basic intents) to cheaper models like Gemini Flash, while reserving GPT-4 for complex reasoning tasks.
+
+[Read the full cost optimization strategy](docs/COST_OPTIMIZATION_SUMMARY.md)
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Principal Agent                       │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │  Intent Classifier (Multi-LLM)                   │  │
+│  │  - Complexity analysis                           │  │
+│  │  - Model selection (Gemini/GPT-4)               │  │
+│  │  - Deterministic fallback                        │  │
+│  └──────────────────────────────────────────────────┘  │
+│                          │                               │
+│         ┌────────────────┼────────────────┐            │
+│         ▼                ▼                ▼             │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐        │
+│  │ Tickets  │    │ Account  │    │ Payments │        │
+│  │  Agent   │    │  Agent   │    │  Agent   │        │
+│  └──────────┘    └──────────┘    └──────────┘        │
+└─────────────────────────────────────────────────────────┘
+         │                 │                 │
+         ▼                 ▼                 ▼
+  ┌──────────┐      ┌──────────┐     ┌──────────┐
+  │ GitHub   │      │ Database │     │ Guardrails│
+  │   API    │      │  Layer   │     │ & Audit   │
+  └──────────┘      └──────────┘     └──────────┘
+```
+
+## Documentation
+
+### Getting Started
+- [Quick Start Guide](QUICKSTART.md) - Get up and running in 5 minutes
+- [Console App Guide](docs/CONSOLE_APP.md) - Interactive CLI usage
+- [Project Structure](docs/STRUCTURE.md) - Codebase organization
+
+### Core Features
+- [Multi-LLM Strategy](docs/MULTI_LLM_STRATEGY.md) - Cost optimization approach
+- [Database Integration](docs/DATABASE_INTEGRATION.md) - Persistence layer (Step 10)
+- [A2A Communication](docs/A2A_COMMUNICATION.md) - Agent-to-agent protocol
+
+### Implementation
+- [Cost Optimization Summary](docs/COST_OPTIMIZATION_SUMMARY.md) - Quick reference
+- [Implementation Guide](docs/IMPLEMENTATION_GUIDE.md) - Step-by-step setup
+- [Development History](docs/DEVELOPMENT_HISTORY.md) - Project evolution
+
+### Roadmap
+- [Production Roadmap](docs/PRODUCTION_ROADMAP.md) - Steps 10-25 detailed plan
+- [UX Enhancement Proposal](docs/UX_ENHANCEMENT_PROPOSAL.md) - Future improvements
+
+## Development Roadmap
+
+We're building this framework systematically, one production feature at a time. Here's where we are:
+
+**Phase 1: Core Infrastructure** (Steps 10-13)
+- [x] Step 10: Database Integration & Persistence
+- [ ] Step 11: Authentication & Authorization
+- [ ] Step 12: API Rate Limiting & Throttling
+- [ ] Step 13: Caching Layer (Redis)
+
+**Phase 2: Scalability** (Steps 14-16)
+- [ ] Step 14: Horizontal Scaling & Load Balancing
+- [ ] Step 15: Message Queue (RabbitMQ/Kafka)
+- [ ] Step 16: Monitoring & Observability
+
+**Phase 3: Advanced AI** (Steps 17-19)
+- [ ] Step 17: Vector Database & Semantic Search
+- [ ] Step 18: RAG (Retrieval-Augmented Generation)
+- [ ] Step 19: Fine-tuning & Model Optimization
+
+**Phase 4: Business Features** (Steps 20-22)
+- [ ] Step 20: Multi-tenancy Support
+- [ ] Step 21: Billing & Usage Tracking
+- [ ] Step 22: Admin Dashboard
+
+**Phase 5: Production Readiness** (Steps 23-25)
+- [ ] Step 23: CI/CD Pipeline
+- [ ] Step 24: Docker & Kubernetes
+- [ ] Step 25: Production Deployment Guide
+
+[View detailed roadmap with timelines](docs/PRODUCTION_ROADMAP.md)
+
+## Configuration
+
+### Environment Variables
+
+```bash
+# LLM Configuration (optional - works without)
+ANTHROPIC_API_KEY=your-key
+OPENAI_API_KEY=your-key
+GOOGLE_API_KEY=your-key
+
+# Database (Step 10)
+DATABASE_URL=sqlite:///data/procode.db  # or PostgreSQL URL
+USE_DATABASE=false  # Set to true to enable persistence
+
+# Tool Integration (optional)
+USE_REAL_TOOLS=false
+GITHUB_TOKEN=your-token
+GITHUB_REPO=owner/repo
+
+# Conversation Settings
+CONVERSATION_WINDOW_SIZE=10
+```
+
+See [.env.example](.env.example) for all available options.
+
+## Testing
+
+```bash
+# Run all tests
 make test-all
 
-# Check environment variables
-make check-env
+# Run specific test suites
+make test              # Unit tests
+make test-llm          # LLM integration tests
+make test-streaming    # Streaming tests
+make test-a2a          # Agent-to-agent tests
 
-# Clean up
-make clean
+# Test database integration
+python test_database.py
+
+# Test cost optimization
+python test_multi_llm.py
 ```
 
-See the full list of commands with `make help`.
+## API Examples
 
-## Manual Setup
+### Basic Request (JSON-RPC)
 
-### 1. Install Dependencies
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .
-```
-
-### 2. Configure API Key (Optional)
-
-For LLM-based intent classification, set one of the following API keys:
-
-**Anthropic (Claude) - Recommended:**
-```bash
-export ANTHROPIC_API_KEY="your-anthropic-key"
-```
-
-**OpenAI (GPT):**
-```bash
-export OPENAI_API_KEY="your-openai-key"
-```
-
-**Google (Gemini):**
-```bash
-export GOOGLE_API_KEY="your-google-key"
-```
-
-The agent will automatically detect and use the first available provider in this order:
-1. Anthropic (Claude 3.5 Sonnet)
-2. OpenAI (GPT-4o-mini)
-3. Google (Gemini 2.0 Flash)
-
-You can also specify a provider explicitly:
-```bash
-export LLM_PROVIDER="anthropic"  # or "openai" or "google"
-```
-
-Without any API key, the agent will automatically fall back to deterministic keyword matching.
-
-### 3. Configure LLM Usage (Optional)
-
-Control whether to use LLM for intent classification:
-
-```bash
-# Use LLM (default if any API key is set)
-export USE_LLM_INTENT=true
-
-# Use deterministic matching only
-export USE_LLM_INTENT=false
-```
-
-### 4. Configure GitHub Integration (Optional - Step 5)
-
-For real ticket creation via GitHub Issues:
-
-```bash
-# Set your GitHub personal access token
-export GITHUB_TOKEN="ghp_your_token_here"
-
-# Set the repository (format: owner/repo)
-export GITHUB_REPO="your-username/your-repo"
-
-# Enable real tools (default: false, uses mocked tools)
-export USE_REAL_TOOLS=true
-```
-
-**To create a GitHub token:**
-1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. Generate new token with `repo` scope (for private repos) or `public_repo` (for public repos)
-3. Copy the token and set it as `GITHUB_TOKEN`
-
-**Note**: Without these settings, the agent uses mocked tools (safe for testing).
-
-## Run the Agent
-
-```bash
-source venv/bin/activate
-python -m procode_framework
-# or
-python __main__.py
-```
-
-The agent will be available at: http://localhost:9998/
-
-## Interactive Console App 🎨
-
-For easier testing and interaction, use the **console app** instead of curl:
-
-```bash
-# Terminal 1: Start the agent
-source venv/bin/activate
-python __main__.py
-
-# Terminal 2: Run the console app
-source venv/bin/activate
-python console_app.py
-```
-
-### Console Features
-
-- 🎨 **Beautiful UI** with colors and formatting
-- 💬 **Interactive chat** with natural conversation flow
-- 📝 **History tracking** - view past conversations
-- 🔍 **Health checks** - monitor agent status
-- ⌨️ **Built-in commands** - `/help`, `/history`, `/status`, `/clear`, `/quit`
-
-### Example Usage
-
-```
-You: Create a support ticket for login issues
-Agent: Ticket processed (mocked). Ticket ID: MOCK-001
-
-You: /history
-Conversation History:
-You (1): Create a support ticket for login issues
-Agent (1): Ticket processed (mocked). Ticket ID: MOCK-001
-
-You: /status
-✓ Agent is healthy and running at http://localhost:9998
-```
-
-See [`docs/CONSOLE_APP.md`](docs/CONSOLE_APP.md) for full documentation.
-
-## Run the Tests
-
-### Unit Tests (Default)
-
-```bash
-source venv/bin/activate
-python tests.py
-```
-
-**Note**:
-- Unit tests use mocked tools and work without any credentials
-- LLM tests are skipped if no API key is available
-- Integration tests are skipped by default
-
-### Integration Tests (Optional)
-
-To run integration tests with real GitHub API:
-
-```bash
-# Set GitHub credentials
-export GITHUB_TOKEN="your-token"
-export GITHUB_REPO="owner/repo"
-
-# Enable integration tests
-export RUN_INTEGRATION_TESTS=true
-
-# Run tests
-python tests.py
-```
-
-**Warning**: Integration tests will create real GitHub issues in your repository!
-
-## Example Requests
-
-### Using JSON-RPC (A2A Protocol)
-
-#### Ticket request (keyword-based)
 ```bash
 curl -X POST http://localhost:9998/ \
   -H 'Content-Type: application/json' \
@@ -244,7 +206,7 @@ curl -X POST http://localhost:9998/ \
     "params": {
       "message": {
         "role": "user",
-        "parts": [{"kind": "text", "text": "create ticket"}],
+        "parts": [{"kind": "text", "text": "Create a support ticket"}],
         "messageId": "msg-001"
       }
     },
@@ -252,231 +214,97 @@ curl -X POST http://localhost:9998/ \
   }'
 ```
 
-#### Ticket request (natural language - requires API key)
-```bash
-curl -X POST http://localhost:9998/ \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "jsonrpc": "2.0",
-    "method": "message/send",
-    "params": {
-      "message": {
-        "role": "user",
-        "parts": [{"kind": "text", "text": "I need help with my order, something went wrong"}],
-        "messageId": "msg-002"
-      }
-    },
-    "id": 2
-  }'
-```
+### Streaming Request (SSE)
 
-#### Account request (natural language)
-```bash
-curl -X POST http://localhost:9998/ \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "jsonrpc": "2.0",
-    "method": "message/send",
-    "params": {
-      "message": {
-        "role": "user",
-        "parts": [{"kind": "text", "text": "Can you show me my profile information?"}],
-        "messageId": "msg-003"
-      }
-    },
-    "id": 3
-  }'
-```
-
-#### Payment request (should be refused)
-```bash
-curl -X POST http://localhost:9998/ \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "jsonrpc": "2.0",
-    "method": "message/send",
-    "params": {
-      "message": {
-        "role": "user",
-        "parts": [{"kind": "text", "text": "I want to make a payment"}],
-        "messageId": "msg-004"
-      }
-    },
-    "id": 4
-  }'
-```
-
-### Using Streaming Endpoint (Step 7)
-
-The agent supports **Server-Sent Events (SSE)** for real-time streaming responses:
-
-#### Streaming ticket creation
 ```bash
 curl -N -X POST http://localhost:9998/stream \
   -H 'Content-Type: application/json' \
   -d '{
     "message": {
       "role": "user",
-      "parts": [{"kind": "text", "text": "Create a support ticket for login issue"}]
+      "parts": [{"kind": "text", "text": "I need help with my account"}]
     }
   }'
 ```
 
-#### Streaming with natural language
+## Web Interfaces
+
+### Streamlit (Simple, Working)
 ```bash
-curl -N -X POST http://localhost:9998/stream \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "message": {
-      "role": "user",
-      "parts": [{"kind": "text", "text": "I need help with my account settings"}]
-    }
-  }'
+make streamlit-app
 ```
+Access at http://localhost:8501
 
-**Note**: The `-N` flag disables buffering for real-time streaming output.
-
-#### Expected Streaming Output
-
-```
-data: {"text": "🤔 Analyzing your request...\n"}
-data: {"text": "📋 Using keyword matching...\n"}
-data: {"text": "✓ Intent identified: tickets\n"}
-data: {"text": "\n🔧 Executing tickets task...\n"}
-data: {"text": "\n📋 Result:\n"}
-data: {"text": "Ticket created successfully! "}
-data: {"text": "Issue #123: https://github.com/..."}
-```
-
-### Streaming Benefits
-
-- **Real-time Feedback**: See progress as the agent works
-- **Reduced Perceived Latency**: Users see immediate response
-- **Progress Tracking**: Visual indicators for each step
-- **Better UX**: Especially for long-running operations
-
-## Architecture
-
-### Intent Classification (Step 4 Enhancement)
-
-The agent uses a hybrid approach for intent classification:
-
-1. **LLM-based Classification** (when `GOOGLE_API_KEY` is set):
-   - Uses Google Gemini for natural language understanding
-   - Handles ambiguous and conversational inputs
-   - Temperature set to 0.0 for deterministic results
-   - Few-shot prompting for accurate classification
-
-2. **Deterministic Fallback**:
-   - Keyword-based matching as backup
-   - Always available (no API key required)
-   - Fast and reliable for simple inputs
-   - Automatically used if LLM fails
-
-### Components
-
-- **Principal Agent Router** (`agent_router.py`): Routes requests to task agents based on classified intent
-- **Intent Classifier** (`intent_classifier.py`): LLM-based classification with deterministic fallback
-- **Task Agents**:
-  - `task_tickets.py`: Handles support ticket operations
-  - `task_account.py`: Manages account-related queries
-  - `task_payments.py`: Refuses payment operations (stubbed for safety)
-- **Tools** (`tools.py`): Mocked tool implementations
-- **Guardrails** (`guardrails.py`): Input/output validation
-- **Tests** (`tests.py`): Comprehensive test coverage including natural language inputs
-
-## Conversation Memory (Step 6)
-
-The agent now supports **multi-turn conversations** with context awareness:
-
-- **Automatic History Tracking**: Stores user and agent messages
-- **Context Window Management**: Keeps last 10 messages by default (configurable)
-- **Follow-up Questions**: Agent can reference previous messages
-- **Conversation ID Tracking**: Separate conversations maintained independently
-- **Automatic Cleanup**: Old conversations removed after 24 hours
-
-### Configuration
-
+### Next.js (Modern, Production-Ready)
 ```bash
-# Set conversation window size (default: 10 messages)
-export CONVERSATION_WINDOW_SIZE=20
+cd frontend
+npm install
+npm run dev
+```
+Access at http://localhost:3000
+
+## Project Structure
+
+```
+procode-agent-framework/
+├── core/                    # Core agent functionality
+│   ├── agent_router.py     # Main routing logic
+│   ├── intent_classifier.py # LLM-based classification
+│   ├── multi_llm_classifier.py # Cost-optimized routing
+│   └── conversation_memory.py # Multi-turn support
+├── database/               # Database layer (Step 10)
+│   ├── models.py          # SQLAlchemy models
+│   ├── connection.py      # Database connection
+│   └── repositories/      # Data access layer
+├── security/              # Security & compliance
+│   ├── enhanced_guardrails.py # PII detection
+│   ├── audit_logger.py    # Audit trail
+│   └── rate_limiter.py    # Rate limiting
+├── tasks/                 # Task-specific agents
+│   ├── task_tickets.py   # Support tickets
+│   ├── task_account.py   # Account management
+│   └── task_payments.py  # Payment operations
+├── frontend/             # Next.js web interface
+├── docs/                 # Comprehensive documentation
+└── tests/                # Test suite
 ```
 
-### Example Multi-Turn Conversation
+## Contributing
 
-```bash
-# Turn 1: Create a ticket
-curl -X POST http://localhost:9998/ -H 'Content-Type: application/json' -d '{
-  "jsonrpc": "2.0",
-  "method": "message/send",
-  "params": {
-    "message": {
-      "role": "user",
-      "parts": [{"kind": "text", "text": "I need to create a support ticket"}],
-      "messageId": "conv-123-msg1"
-    }
-  },
-  "id": 1
-}'
+This is an active learning project demonstrating production-ready AI agent development. While not currently accepting external contributions, feel free to:
 
-# Turn 2: Follow-up question (agent remembers context)
-curl -X POST http://localhost:9998/ -H 'Content-Type: application/json' -d '{
-  "jsonrpc": "2.0",
-  "method": "message/send",
-  "params": {
-    "message": {
-      "role": "user",
-      "parts": [{"kind": "text", "text": "What is the status?"}],
-      "messageId": "conv-123-msg2"
-    }
-  },
-  "id": 2
-}'
-```
+- Star the repo to follow progress
+- Open issues for questions or suggestions
+- Fork for your own experiments
+- Check back regularly for new features (we're at Step 10 of 25!)
 
-The agent will recognize "What is the status?" refers to the ticket from the previous message.
+## Technology Stack
 
-## Streaming Responses (Step 7)
+- **Framework**: A2A SDK (Agent-to-Agent protocol)
+- **LLM Providers**: Anthropic Claude, OpenAI GPT, Google Gemini
+- **Database**: SQLAlchemy (SQLite/PostgreSQL)
+- **Migrations**: Alembic
+- **Web**: Starlette, FastAPI, Next.js, Streamlit
+- **Testing**: pytest, unittest
+- **Tools**: GitHub API, Rich (CLI), CopilotKit
 
-The agent supports **real-time streaming** for improved user experience:
+## License
 
-### Features
+MIT License - See LICENSE file for details
 
-- **Server-Sent Events (SSE)**: Standard streaming protocol
-- **Progress Indicators**: Visual feedback for each step
-- **Token-by-Token Streaming**: Responses stream as they're generated
-- **Tool Progress**: Real-time updates during tool execution
-- **Error Handling**: Graceful error streaming
-- **Backward Compatible**: Non-streaming endpoints still work
+## What's Next?
 
-### Testing Streaming
+**Step 11: Authentication & Authorization** is coming next, featuring:
+- User registration and login
+- JWT token generation
+- API key authentication
+- Role-based access control (RBAC)
+- Session management
 
-Run streaming tests:
-```bash
-source venv/bin/activate
-python test_streaming.py
-```
+The database models are already in place. Follow the repo to see it implemented!
 
-Or run specific streaming tests:
-```bash
-pytest test_streaming.py::TestStreamingHandler -v
-pytest test_streaming.py::TestAgentRouterStreaming -v
-```
+---
 
-## Features
+**Built with expertise in**: AI/ML Engineering, Solution Architecture, Production Systems, Cost Optimization, Security & Compliance
 
-- ✅ **Streaming Responses**: Real-time SSE streaming with progress indicators
-- ✅ **A2A Protocol Compatible**: Full Agent-to-Agent protocol support
-- ✅ **Multi-Provider LLM**: Supports Anthropic, OpenAI, Google, and Ollama
-- ✅ **💰 Cost Optimization**: Multi-LLM strategy with 85-98% cost savings
-- ✅ **Intelligent Caching**: Reduces duplicate LLM calls automatically
-- ✅ **Confidence-Based Routing**: Uses LLM only when needed
-- ✅ **Conversation Memory**: Multi-turn dialogues with context awareness
-- ✅ **Natural Language Understanding**: Handles conversational inputs
-- ✅ **Real Tool Integration**: GitHub Issues API with retry logic
-- ✅ **Hybrid Tools**: Mocked tools for testing, real tools for production
-- ✅ **Deterministic Fallback**: Works without any API keys
-- ✅ **Input/Output Validation**: Guardrails for safety
-- ✅ **Comprehensive Tests**: Unit tests + optional integration tests
-- ✅ **Production-Ready**: Error handling, retries, rate limiting
-- ✅ **Graceful Degradation**: Falls back to mocked tools if credentials missing
+**Questions?** Check the [documentation](docs/) or review the [development history](docs/DEVELOPMENT_HISTORY.md) for context.
