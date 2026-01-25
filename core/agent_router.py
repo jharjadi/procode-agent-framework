@@ -8,6 +8,7 @@ from a2a.utils import new_agent_text_message
 from tasks.task_tickets import TicketsAgent
 from tasks.task_account import AccountAgent
 from tasks.task_payments import PaymentsAgent
+from tasks.task_general import GeneralAgent
 from security.enhanced_guardrails import EnhancedGuardrails, get_global_enhanced_guardrails
 from core.intent_classifier import IntentClassifier
 from core.conversation_memory import get_conversation_memory
@@ -37,6 +38,7 @@ class ProcodeAgentRouter(AgentExecutor):
         self.tickets_agent = TicketsAgent()
         self.account_agent = AccountAgent()
         self.payments_agent = PaymentsAgent()
+        self.general_agent = GeneralAgent()
         
         # Determine whether to use LLM
         if use_llm is None:
@@ -138,8 +140,10 @@ class ProcodeAgentRouter(AgentExecutor):
                 result = await self.account_agent.invoke(simple_context)
             elif intent == "payments":
                 result = await self.payments_agent.invoke(simple_context)
+            elif intent == "general":
+                result = await self.general_agent.invoke(simple_context)
             else:
-                result = "Unknown intent"
+                result = "I'm not sure how to help with that. Try asking about tickets, account, or general questions!"
         
         # Output validation with enhanced guardrails
         if self.use_enhanced_guardrails:
@@ -246,8 +250,10 @@ class ProcodeAgentRouter(AgentExecutor):
             result = await self.account_agent.invoke(simple_context)
         elif intent == "payments":
             result = await self.payments_agent.invoke(simple_context)
+        elif intent == "general":
+            result = await self.general_agent.invoke(simple_context)
         else:
-            result = "Unknown intent"
+            result = "I'm not sure how to help with that. Try asking about tickets, account, or general questions!"
         
         # Validate and sanitize output with enhanced guardrails
         if self.use_enhanced_guardrails:

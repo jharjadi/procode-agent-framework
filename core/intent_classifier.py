@@ -2,7 +2,7 @@ import os
 from typing import Literal, Optional, AsyncGenerator
 import asyncio
 
-IntentType = Literal["tickets", "account", "payments", "unknown"]
+IntentType = Literal["tickets", "account", "payments", "general", "unknown"]
 
 class IntentClassifier:
     """
@@ -150,6 +150,7 @@ Classify the following user message into ONE of these intents:
 - tickets: For creating, viewing, or managing support tickets
 - account: For account information, profile changes, or account-related queries
 - payments: For payment-related requests (note: payment actions are not supported)
+- general: For greetings, casual conversation, general questions, or friendly chat
 - unknown: For anything that doesn't fit the above categories
 
 Examples:
@@ -161,6 +162,18 @@ Intent: account
 
 User: "I want to make a payment"
 Intent: payments
+
+User: "Hello"
+Intent: general
+
+User: "Good morning!"
+Intent: general
+
+User: "How are you?"
+Intent: general
+
+User: "What can you help me with?"
+Intent: general
 
 User: "What's the weather today?"
 Intent: unknown
@@ -185,6 +198,8 @@ Intent:"""
             return "account"
         elif "payments" in intent_text:
             return "payments"
+        elif "general" in intent_text:
+            return "general"
         else:
             return "unknown"
     
@@ -194,6 +209,14 @@ Intent:"""
         Check more specific keywords first to avoid ambiguity.
         """
         text_lower = text.strip().lower()
+        
+        # Greeting and general conversation keywords (check first)
+        greeting_keywords = ["hello", "hi", "hey", "good morning", "good afternoon",
+                            "good evening", "greetings", "how are you", "what's up",
+                            "thanks", "thank you", "bye", "goodbye", "what can you do",
+                            "who are you", "help me understand"]
+        if any(keyword in text_lower for keyword in greeting_keywords):
+            return "general"
         
         # Payment-related keywords (check first as they're more specific)
         payment_keywords = ["payment", "pay", "billing", "invoice", "charge", "bill"]
@@ -206,7 +229,7 @@ Intent:"""
             return "account"
         
         # Ticket-related keywords (more general, check last)
-        ticket_keywords = ["ticket", "support", "issue", "problem", "bug", "help", "error"]
+        ticket_keywords = ["ticket", "support", "issue", "problem", "bug", "error"]
         if any(keyword in text_lower for keyword in ticket_keywords):
             return "tickets"
         
