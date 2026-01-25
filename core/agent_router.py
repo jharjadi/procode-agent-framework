@@ -8,7 +8,7 @@ from a2a.utils import new_agent_text_message
 from tasks.task_tickets import TicketsAgent
 from tasks.task_account import AccountAgent
 from tasks.task_payments import PaymentsAgent
-from security.guardrails import validate_input, validate_output
+from security.enhanced_guardrails import EnhancedGuardrails, get_global_enhanced_guardrails
 from core.intent_classifier import IntentClassifier
 from core.conversation_memory import get_conversation_memory
 from streaming.streaming_handler import StreamingHandler
@@ -21,8 +21,9 @@ class ProcodeAgentRouter(AgentExecutor):
     Principal agent router with LLM-based intent classification and A2A delegation.
     Falls back to deterministic routing if LLM is unavailable.
     Supports delegating tasks to other agents via A2A protocol.
+    Enhanced with comprehensive security guardrails.
     """
-    def __init__(self, use_llm: bool = None, enable_a2a: bool = True):
+    def __init__(self, use_llm: bool = None, enable_a2a: bool = True, use_enhanced_guardrails: bool = True):
         """
         Initialize the router.
         
@@ -31,6 +32,7 @@ class ProcodeAgentRouter(AgentExecutor):
                     If False, use deterministic matching.
                     If None, check USE_LLM_INTENT environment variable (default: True)
             enable_a2a: If True, enable agent-to-agent communication
+            use_enhanced_guardrails: If True, use enhanced guardrails with PII detection, rate limiting, etc.
         """
         self.tickets_agent = TicketsAgent()
         self.account_agent = AccountAgent()
@@ -42,6 +44,13 @@ class ProcodeAgentRouter(AgentExecutor):
         
         self.intent_classifier = IntentClassifier(use_llm=use_llm)
         self.streaming_handler = StreamingHandler()
+        
+        # Enhanced guardrails
+        self.use_enhanced_guardrails = use_enhanced_guardrails
+        if use_enhanced_guardrails:
+            self.guardrails = get_global_enhanced_guardrails()
+        else:
+            self.guardrails = None
         
         # A2A communication components
         self.enable_a2a = enable_a2a
@@ -95,33 +104,58 @@ class ProcodeAgentRouter(AgentExecutor):
         
         simple_context = SimpleContext(text, history)
         
-        # Input validation
-        if not validate_input(simple_context):
-            result = "Invalid input"
+        # Input validation with enhanced guardrails
+        if self.use_enhanced_guardrails:
+            is_valid, error_msg = self.guardrails.validate_input(text, user_id=conversation_id)
+            if not is_valid:
+                result = f"❌ {error_msg}"
+                # Store error in conversation history
+                memory.add_message(conversation_id, "agent", result, metadata={"error": "validation_failed"})
+                await event_queue.enqueue_event(new_agent_text_message(result))
+                return
         else:
-            # Check if this should be delegated to another agent
-            if self._should_delegate(text):
-                result = await self._delegate_to_agent(text, context)
+            # Fallback to basic validation
+            from security.guardrails import validate_input
+            if not validate_input(simple_context):
+                result = "Invalid input"
+                memory.add_message(conversation_id, "agent", result, metadata={"error": "validation_failed"})
+                await event_queue.enqueue_event(new_agent_text_message(result))
+                return
+        
+        # Process the request
+        # Check if this should be delegated to another agent
+        if self._should_delegate(text):
+            result = await self._delegate_to_agent(text, context)
+            intent = "delegation"
+        else:
+            # Classify intent using LLM or deterministic matching
+            intent = self.intent_classifier.classify_intent(text)
+            
+            # Route to appropriate agent based on intent
+            if intent == "tickets":
+                result = await self.tickets_agent.invoke(simple_context)
+            elif intent == "account":
+                result = await self.account_agent.invoke(simple_context)
+            elif intent == "payments":
+                result = await self.payments_agent.invoke(simple_context)
             else:
-                # Classify intent using LLM or deterministic matching
-                intent = self.intent_classifier.classify_intent(text)
-                
-                # Route to appropriate agent based on intent
-                if intent == "tickets":
-                    result = await self.tickets_agent.invoke(simple_context)
-                elif intent == "account":
-                    result = await self.account_agent.invoke(simple_context)
-                elif intent == "payments":
-                    result = await self.payments_agent.invoke(simple_context)
-                else:
-                    result = "Unknown intent"
-                
-                # Output validation
-                if not validate_output(result):
-                    result = "Output validation failed"
+                result = "Unknown intent"
+        
+        # Output validation with enhanced guardrails
+        if self.use_enhanced_guardrails:
+            # Sanitize output to remove PII
+            result = self.guardrails.sanitize_output(result, redact_pii=True)
+            is_valid, error_msg = self.guardrails.validate_output(result)
+            if not is_valid:
+                result = f"❌ Output validation failed: {error_msg}"
+        else:
+            # Fallback to basic validation
+            from security.guardrails import validate_output
+            if not validate_output(result):
+                result = "Output validation failed"
         
         # Store agent response in conversation history
-        memory.add_message(conversation_id, "agent", result, metadata={"intent": intent if 'intent' in locals() else "unknown"})
+        memory.add_message(conversation_id, "agent", result, metadata={"intent": intent})
         
         # Send result as a message
         await event_queue.enqueue_event(new_agent_text_message(result))
@@ -177,10 +211,18 @@ class ProcodeAgentRouter(AgentExecutor):
         
         simple_context = SimpleContext(text, history)
         
-        # Input validation
-        if not validate_input(simple_context):
-            yield TextPart(text="❌ Invalid input\n")
-            return
+        # Input validation with enhanced guardrails
+        if self.use_enhanced_guardrails:
+            is_valid, error_msg = self.guardrails.validate_input(text, user_id=conversation_id)
+            if not is_valid:
+                yield TextPart(text=f"❌ {error_msg}\n")
+                return
+        else:
+            # Fallback to basic validation
+            from security.guardrails import validate_input
+            if not validate_input(simple_context):
+                yield TextPart(text="❌ Invalid input\n")
+                return
         
         # Stream intent classification
         intent = None
@@ -207,10 +249,20 @@ class ProcodeAgentRouter(AgentExecutor):
         else:
             result = "Unknown intent"
         
-        # Validate output
-        if not validate_output(result):
-            yield TextPart(text="❌ Output validation failed\n")
-            return
+        # Validate and sanitize output with enhanced guardrails
+        if self.use_enhanced_guardrails:
+            # Sanitize output to remove PII
+            result = self.guardrails.sanitize_output(result, redact_pii=True)
+            is_valid, error_msg = self.guardrails.validate_output(result)
+            if not is_valid:
+                yield TextPart(text=f"❌ Output validation failed: {error_msg}\n")
+                return
+        else:
+            # Fallback to basic validation
+            from security.guardrails import validate_output
+            if not validate_output(result):
+                yield TextPart(text="❌ Output validation failed\n")
+                return
         
         # Store agent response
         memory.add_message(conversation_id, "agent", result, metadata={"intent": intent})

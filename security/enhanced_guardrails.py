@@ -8,9 +8,9 @@ audit logging, and compliance features to ensure safe operation.
 
 from typing import Optional, List, Dict, Any, Tuple
 import re
-from rate_limiter import RateLimiter, get_global_rate_limiter
-from audit_logger import AuditLogger, get_global_audit_logger
-from compliance import ComplianceManager, get_global_compliance_manager
+from security.rate_limiter import RateLimiter, get_global_rate_limiter
+from security.audit_logger import AuditLogger, get_global_audit_logger
+from security.compliance import ComplianceManager, get_global_compliance_manager
 
 
 class EnhancedGuardrails:
