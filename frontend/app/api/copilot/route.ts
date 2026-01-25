@@ -1,21 +1,32 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import {
+  CopilotRuntime,
+  OpenAIAdapter,
+  copilotRuntimeNextJSAppRouterEndpoint,
+} from "@copilotkit/runtime";
 
 /**
- * CopilotKit API Route
+ * CopilotKit Runtime Endpoint
  *
- * Forwards chat requests to your Python backend via A2A protocol
+ * This creates a custom adapter that forwards requests to our Python backend
  */
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:9998";
 
-// POST /api/copilot - Handle chat messages
-export async function POST(request: NextRequest) {
+// Custom service adapter for our Python backend
+const customAdapter = new OpenAIAdapter({
+  model: "gpt-4", // This is just for CopilotKit's internal tracking
+});
+
+// Override the adapter's execute method to call our backend
+const originalExecute = customAdapter.execute.bind(customAdapter);
+customAdapter.execute = async function(params: any) {
   try {
-    const body = await request.json();
-    
-    // Extract message from CopilotKit format
-    const userMessage = body.message || body.text || body.messages?.[body.messages.length - 1]?.content || "";
-    
+    // Extract the user's message from CopilotKit format
+    const messages = params.messages || [];
+    const lastMessage = messages[messages.length - 1];
+    const userMessage = lastMessage?.content || "";
+
     // Format for A2A protocol
     const a2aRequest = {
       jsonrpc: "2.0",
@@ -35,7 +46,7 @@ export async function POST(request: NextRequest) {
       id: Date.now(),
     };
 
-    // Forward to Python backend
+    // Call Python backend
     const response = await fetch(BACKEND_URL, {
       method: "POST",
       headers: {
@@ -51,39 +62,53 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     
     // Extract response from A2A format
-    const agentResponse = data.result?.message?.parts?.[0]?.text ||
+    const agentResponse = data.result?.parts?.[0]?.text ||
+                         data.result?.message?.parts?.[0]?.text ||
                          data.result?.content ||
                          "I apologize, but I couldn't process that request.";
 
-    // Return in CopilotKit format
-    return NextResponse.json({
-      message: agentResponse,
-      metadata: {
-        intent: data.result?.metadata?.intent,
-        model: data.result?.metadata?.model,
-        cost: data.result?.metadata?.cost,
+    // Return in OpenAI-compatible format for CopilotKit
+    return {
+      choices: [
+        {
+          message: {
+            role: "assistant",
+            content: agentResponse,
+          },
+          finish_reason: "stop",
+        },
+      ],
+      usage: {
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        total_tokens: 0,
       },
-    });
+    };
   } catch (error) {
-    console.error("Error in copilot route:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to communicate with agent",
-        message: "I'm having trouble connecting to the backend. Please make sure the Python backend is running on port 9998.",
-      },
-      { status: 500 }
-    );
+    console.error("Error calling backend:", error);
+    // Return error message in OpenAI format
+    return {
+      choices: [
+        {
+          message: {
+            role: "assistant",
+            content: "I'm having trouble connecting to the backend. Please make sure the Python backend is running on port 9998.",
+          },
+          finish_reason: "stop",
+        },
+      ],
+    };
   }
-}
+};
 
-// Handle OPTIONS for CORS
-export async function OPTIONS(request: NextRequest) {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
+const runtime = new CopilotRuntime();
+
+export const POST = async (req: NextRequest) => {
+  const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
+    runtime,
+    serviceAdapter: customAdapter,
+    endpoint: "/api/copilot",
   });
-}
+
+  return handleRequest(req);
+};

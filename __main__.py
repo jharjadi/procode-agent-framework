@@ -2,6 +2,7 @@ import uvicorn
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 from starlette.routing import Route
+from starlette.middleware.cors import CORSMiddleware
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
@@ -113,6 +114,15 @@ if __name__ == "__main__":
     
     # Build the base app
     app = server.build()
+    
+    # Add CORS middleware to allow frontend requests
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:3000", "http://localhost:8501"],  # Frontend URLs
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     
     # Add custom streaming route to the Starlette app
     app.routes.append(Route("/stream", stream_endpoint, methods=["POST"]))
