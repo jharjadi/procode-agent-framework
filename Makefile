@@ -3,6 +3,9 @@
 # Default target
 .DEFAULT_GOAL := help
 
+# Export all environment variables to sub-processes
+.EXPORT_ALL_VARIABLES:
+
 # Colors for output
 BLUE := \033[0;34m
 GREEN := \033[0;32m
