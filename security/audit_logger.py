@@ -3,14 +3,18 @@ Audit Logger Module
 
 This module provides comprehensive audit logging for security, compliance,
 and operational monitoring. It logs all significant events with appropriate
-severity levels and supports daily log rotation.
+severity levels and supports daily log rotation and database persistence.
 """
 
 import json
+import os
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 import threading
+
+logger = logging.getLogger(__name__)
 
 
 class AuditLogger:
@@ -19,25 +23,60 @@ class AuditLogger:
     
     Logs events to daily JSON Lines files with structured data including
     timestamps, event types, user IDs, severity levels, and event details.
+    Optionally persists to database for long-term storage and querying.
     """
     
-    def __init__(self, log_dir: str = "logs/audit"):
+    def __init__(
+        self,
+        log_dir: str = "logs/audit",
+        use_database: bool = None,
+        db_session = None
+    ):
         """
         Initialize the audit logger.
         
         Args:
             log_dir: Directory to store audit logs
+            use_database: Whether to persist to database (default: from env USE_DATABASE)
+            db_session: Optional database session for persistence
         """
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
         self._lock = threading.Lock()
+        
+        if use_database is None:
+            use_database = os.getenv("USE_DATABASE", "false").lower() == "true"
+        
+        self.use_database = use_database
+        self.db_session = db_session
+        self._audit_repo = None
+        
+        if self.use_database:
+            self._init_database()
+    
+    def _init_database(self):
+        """Initialize database connection and repositories."""
+        try:
+            from database.connection import get_db
+            from database.repositories.audit_repository import AuditRepository
+            
+            if self.db_session is None:
+                # Get a database session
+                self.db_session = next(get_db())
+            
+            self._audit_repo = AuditRepository(self.db_session)
+            logger.info("Database persistence enabled for audit logger")
+        except Exception as e:
+            logger.warning(f"Failed to initialize database for audit logger: {e}")
+            self.use_database = False
     
     def log_event(
         self,
         event_type: str,
         details: Dict[str, Any],
         user_id: Optional[str] = None,
-        severity: str = "info"
+        severity: str = "info",
+        event_category: Optional[str] = None
     ):
         """
         Log an audit event.
@@ -47,6 +86,7 @@ class AuditLogger:
             details: Dictionary with event-specific details
             user_id: Optional user identifier
             severity: Event severity ('info', 'warning', 'error', 'critical')
+            event_category: Optional event category for grouping
         """
         event = {
             "timestamp": datetime.now().isoformat(),
@@ -65,6 +105,43 @@ class AuditLogger:
             except Exception as e:
                 # Fallback to stderr if file writing fails
                 print(f"Failed to write audit log: {e}", file=__import__('sys').stderr)
+        
+        # Persist to database if enabled
+        if self.use_database and self._audit_repo:
+            try:
+                # Determine event category if not provided
+                if event_category is None:
+                    if event_type.startswith("security_"):
+                        event_category = "security"
+                    elif event_type.startswith("compliance_"):
+                        event_category = "compliance"
+                    elif event_type in ["authentication", "data_access"]:
+                        event_category = "access"
+                    elif event_type in ["tool_execution", "circuit_breaker"]:
+                        event_category = "system"
+                    else:
+                        event_category = "general"
+                
+                # Convert user_id to int if it's numeric, otherwise use None
+                db_user_id = None
+                if user_id:
+                    try:
+                        db_user_id = int(user_id)
+                    except (ValueError, TypeError):
+                        pass
+                
+                self._audit_repo.create_audit_log(
+                    user_id=db_user_id,
+                    event_type=event_type,
+                    event_category=event_category,
+                    severity=severity,
+                    description=json.dumps(details),
+                    extra_metadata=details
+                )
+                self.db_session.commit()
+            except Exception as e:
+                logger.error(f"Failed to persist audit log to database: {e}")
+                self.db_session.rollback()
     
     def _get_log_file(self) -> Path:
         """

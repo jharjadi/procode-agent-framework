@@ -1,0 +1,5 @@
+{"timestamp": "2026-01-26T06:05:19.617550", "event_type": "pii_detected", "user_id": "4da6052f-7d58-4eab-8370-da6da7e17bd4", "severity": "info", "details": {"pii_types": ["email"]}}
+{"timestamp": "2026-01-26T06:38:21.176137", "event_type": "blocked_content", "user_id": "1", "severity": "warning", "details": {"content_preview": "My email is user@example.com and phone is 555-1234", "content_length": 50}}
+{"timestamp": "2026-01-26T06:38:21.177748", "event_type": "pii_detected", "user_id": "1", "severity": "info", "details": {"pii_types": ["email", "phone"]}}
+{"timestamp": "2026-01-26T06:38:21.178807", "event_type": "tool_execution", "user_id": "1", "severity": "info", "details": {"tool": "create_ticket", "parameters": {"title": "Demo ticket", "priority": "high"}, "result_preview": "Ticket created successfully", "success": true}}
+{"timestamp": "2026-01-26T06:38:21.179870", "event_type": "authentication", "user_id": "1", "severity": "info", "details": {"success": true, "method": "api_key"}}
