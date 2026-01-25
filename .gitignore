@@ -49,3 +49,4 @@ agent.log
 # OS
 .DS_Store
 Thumbs.db
+push-to-dockerhub.sh
