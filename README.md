@@ -11,14 +11,46 @@ A production-style agent framework demonstrating:
 - Input/output guardrails
 - Comprehensive test coverage
 
-## Setup
+## Quick Start with Makefile 🚀
+
+The easiest way to work with this project is using the included Makefile:
+
+```bash
+# Show all available commands
+make help
+
+# Install dependencies
+make install
+
+# Setup development environment
+make dev
+
+# Start the agent server
+make start
+
+# Run interactive console (in another terminal)
+make console
+
+# Run tests
+make test
+make test-all
+
+# Check environment variables
+make check-env
+
+# Clean up
+make clean
+```
+
+See the full list of commands with `make help`.
+
+## Manual Setup
 
 ### 1. Install Dependencies
 
 ```bash
-cd samples/python/agents/procode_framework
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -e .
 ```
 
