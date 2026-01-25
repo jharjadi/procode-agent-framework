@@ -1,4 +1,4 @@
-.PHONY: help install dev start console demo test test-llm test-streaming test-a2a test-all clean lint format check-env push
+.PHONY: help install dev start stop restart console demo test test-llm test-streaming test-a2a test-all clean lint format check-env push
 
 # Default target
 .DEFAULT_GOAL := help
@@ -38,7 +38,24 @@ dev: install ## Setup development environment (install + check)
 
 start: ## Start the agent server
 	@echo "$(BLUE)Starting agent server on http://localhost:9998...$(NC)"
+	@if lsof -ti:9998 > /dev/null 2>&1; then \
+		echo "$(YELLOW)Warning: Port 9998 is already in use. Run 'make stop' first.$(NC)"; \
+		exit 1; \
+	fi
 	@. .venv/bin/activate && python __main__.py
+
+stop: ## Stop the agent server
+	@echo "$(BLUE)Stopping agent server...$(NC)"
+	@if lsof -ti:9998 > /dev/null 2>&1; then \
+		lsof -ti:9998 | xargs kill -9 && \
+		echo "$(GREEN)✓ Agent server stopped$(NC)"; \
+	else \
+		echo "$(YELLOW)No agent server running on port 9998$(NC)"; \
+	fi
+
+restart: stop ## Restart the agent server
+	@sleep 1
+	@$(MAKE) start
 
 console: ## Run interactive console app
 	@echo "$(BLUE)Starting interactive console...$(NC)"
