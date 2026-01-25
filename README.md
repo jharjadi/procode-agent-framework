@@ -392,7 +392,9 @@ This is an active learning project demonstrating production-ready AI agent devel
 
 ## License
 
-MIT License - See LICENSE file for details
+[MIT License](LICENSE) - See LICENSE file for details.
+
+Copyright (c) 2026 Jimmy Harjadi
 
 ## What's Next?
 
