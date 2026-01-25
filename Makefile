@@ -1,4 +1,4 @@
-.PHONY: help install dev start stop restart console demo test test-llm test-streaming test-a2a test-all clean lint format check-env push
+.PHONY: help install dev start stop restart console demo test test-llm test-streaming test-a2a test-all clean lint format check-env push frontend-install frontend-dev frontend-build frontend-start frontend-clean streamlit-app
 
 # Default target
 .DEFAULT_GOAL := help
@@ -209,4 +209,102 @@ docs: ## Show documentation files
 	@echo "  - $(GREEN)docs/CONSOLE_APP.md$(NC) - Console app usage"
 	@echo "  - $(GREEN)docs/A2A_COMMUNICATION.md$(NC) - A2A features"
 	@echo "  - $(GREEN)docs/DEVELOPMENT_HISTORY.md$(NC) - Development context"
+	@echo "  - $(GREEN)docs/COST_OPTIMIZATION_SUMMARY.md$(NC) - Cost optimization guide"
+	@echo "  - $(GREEN)docs/MULTI_LLM_STRATEGY.md$(NC) - Multi-LLM strategy details"
+	@echo "  - $(GREEN)docs/IMPLEMENTATION_GUIDE.md$(NC) - Implementation guide"
+	@echo "  - $(GREEN)docs/UX_ENHANCEMENT_PROPOSAL.md$(NC) - UX enhancement proposal"
 	@echo ""
+
+# ============================================================================
+# Frontend Commands
+# ============================================================================
+
+frontend-install: ## Install frontend dependencies
+	@echo "$(BLUE)Installing frontend dependencies...$(NC)"
+	@cd frontend && npm install
+	@echo "$(GREEN)✓ Frontend dependencies installed!$(NC)"
+
+frontend-dev: ## Start frontend development server
+	@echo "$(BLUE)Starting frontend development server on http://localhost:3000...$(NC)"
+	@if lsof -ti:3000 > /dev/null 2>&1; then \
+		echo "$(YELLOW)Warning: Port 3000 is already in use. Run 'make frontend-stop' first.$(NC)"; \
+		exit 1; \
+	fi
+	@cd frontend && npm run dev
+
+frontend-build: ## Build frontend for production
+	@echo "$(BLUE)Building frontend for production...$(NC)"
+	@cd frontend && npm run build
+	@echo "$(GREEN)✓ Frontend built successfully!$(NC)"
+
+frontend-start: ## Start frontend production server
+	@echo "$(BLUE)Starting frontend production server...$(NC)"
+	@cd frontend && npm start
+
+frontend-stop: ## Stop frontend server
+	@echo "$(BLUE)Stopping frontend server...$(NC)"
+	@if lsof -ti:3000 > /dev/null 2>&1; then \
+		lsof -ti:3000 | xargs kill -9 && \
+		echo "$(GREEN)✓ Frontend server stopped$(NC)"; \
+	else \
+		echo "$(YELLOW)No frontend server running on port 3000$(NC)"; \
+	fi
+
+frontend-clean: ## Clean frontend build artifacts
+	@echo "$(BLUE)Cleaning frontend build artifacts...$(NC)"
+	@cd frontend && rm -rf .next node_modules
+	@echo "$(GREEN)✓ Frontend cleaned!$(NC)"
+
+frontend-lint: ## Run frontend linting
+	@echo "$(BLUE)Running frontend linting...$(NC)"
+	@cd frontend && npm run lint
+
+# ============================================================================
+# Full Stack Commands
+# ============================================================================
+
+fullstack-install: install frontend-install ## Install both backend and frontend dependencies
+	@echo "$(GREEN)✓ Full stack dependencies installed!$(NC)"
+
+fullstack-dev: ## Start both backend and frontend in development mode
+	@echo "$(BLUE)Starting full stack in development mode...$(NC)"
+	@echo "$(YELLOW)Starting backend on port 9998...$(NC)"
+	@. .venv/bin/activate && python __main__.py & \
+	sleep 3 && \
+	echo "$(YELLOW)Starting frontend on port 3000...$(NC)" && \
+	cd frontend && npm run dev
+
+fullstack-stop: stop frontend-stop ## Stop both backend and frontend
+	@echo "$(GREEN)✓ Full stack stopped!$(NC)"
+
+fullstack-clean: clean frontend-clean ## Clean both backend and frontend
+	@echo "$(GREEN)✓ Full stack cleaned!$(NC)"
+
+# ============================================================================
+# Cost Optimization Commands
+# ============================================================================
+
+test-multi-llm: ## Test multi-LLM cost optimization
+	@echo "$(BLUE)Testing multi-LLM classifier...$(NC)"
+	@. .venv/bin/activate && python test_multi_llm.py
+
+cost-metrics: ## Show cost optimization metrics
+	@echo "$(BLUE)Cost Optimization Metrics:$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Documentation:$(NC)"
+	@echo "  - docs/COST_OPTIMIZATION_SUMMARY.md"
+	@echo "  - docs/MULTI_LLM_STRATEGY.md"
+	@echo "  - docs/IMPLEMENTATION_GUIDE.md"
+	@echo ""
+	@echo "$(YELLOW)Run tests to see savings:$(NC)"
+	@echo "  make test-multi-llm"
+	@echo ""
+
+# ============================================================================
+# Streamlit Web UI (Simple Alternative)
+# ============================================================================
+
+streamlit-app: ## Start Streamlit web UI (simple, working alternative to Next.js)
+	@echo "$(BLUE)Starting Streamlit web UI...$(NC)"
+	@echo "$(YELLOW)Make sure backend is running: make start$(NC)"
+	@. .venv/bin/activate && pip install streamlit requests 2>/dev/null && streamlit run streamlit_app.py

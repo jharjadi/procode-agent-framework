@@ -1,0 +1,3 @@
+{"timestamp": "2026-01-25T22:27:34.283953", "event_type": "pii_detected", "user_id": null, "severity": "info", "details": {"pii_types": ["email"]}}
+{"timestamp": "2026-01-25T22:27:34.284336", "event_type": "security_injection_attempt", "user_id": null, "severity": "critical", "details": {"content_preview": "'; DROP TABLE users; --", "content_length": 23}}
+{"timestamp": "2026-01-25T22:28:48.818963", "event_type": "pii_detected", "user_id": "eed6fabc-4b88-45c7-8e9c-37f9fa6d5fc6", "severity": "info", "details": {"pii_types": ["email"]}}

@@ -3,6 +3,7 @@
 A production-style agent framework demonstrating:
 - **Streaming responses** for real-time feedback
 - **LLM-based intent classification** with multi-provider support
+- **💰 Cost-optimized multi-LLM strategy** (85-98% cost savings)
 - **Conversation memory** for multi-turn dialogues
 - **Real tool integration** with GitHub Issues API
 - Principal agent routing
@@ -10,6 +11,34 @@ A production-style agent framework demonstrating:
 - Hybrid tools (mocked/real)
 - Input/output guardrails
 - Comprehensive test coverage
+
+## 💰 Cost Optimization (NEW!)
+
+**Reduce your LLM costs by 85-98%** without sacrificing quality! The framework now includes a multi-LLM strategy specifically optimized for intent classification.
+
+### Quick Cost Comparison (10,000 requests/day)
+
+| Strategy | Monthly Cost | Annual Savings |
+|----------|--------------|----------------|
+| Current (Claude Sonnet) | $225 | Baseline |
+| **Claude Haiku** | $19 | **$2,475** ✨ |
+| **Multi-LLM Strategy** | $6 | **$2,628** 🚀 |
+| **Ollama (Local)** | $0 | **$2,700** 💎 |
+
+### Three Implementation Options
+
+1. **Quick Win (5 min)** - Switch to Claude Haiku → 92% savings
+2. **Best ROI (30 min)** - Use Multi-LLM Classifier → 98% savings
+3. **Zero Cost (1 hour)** - Use Ollama locally → 100% savings
+
+### Documentation
+
+- 📊 **[Cost Optimization Summary](docs/COST_OPTIMIZATION_SUMMARY.md)** - Quick reference with cost comparisons
+- 📈 **[Multi-LLM Strategy](docs/MULTI_LLM_STRATEGY.md)** - Detailed strategy and recommendations
+- 🛠️ **[Implementation Guide](docs/IMPLEMENTATION_GUIDE.md)** - Step-by-step implementation
+- 🧪 **[Test Suite](test_multi_llm.py)** - Run `python test_multi_llm.py` to see it in action
+
+**Start saving today!** See the [Cost Optimization Summary](docs/COST_OPTIMIZATION_SUMMARY.md) for details.
 
 ## Quick Start with Makefile 🚀
 
@@ -438,7 +467,10 @@ pytest test_streaming.py::TestAgentRouterStreaming -v
 
 - ✅ **Streaming Responses**: Real-time SSE streaming with progress indicators
 - ✅ **A2A Protocol Compatible**: Full Agent-to-Agent protocol support
-- ✅ **Multi-Provider LLM**: Supports Anthropic, OpenAI, and Google
+- ✅ **Multi-Provider LLM**: Supports Anthropic, OpenAI, Google, and Ollama
+- ✅ **💰 Cost Optimization**: Multi-LLM strategy with 85-98% cost savings
+- ✅ **Intelligent Caching**: Reduces duplicate LLM calls automatically
+- ✅ **Confidence-Based Routing**: Uses LLM only when needed
 - ✅ **Conversation Memory**: Multi-turn dialogues with context awareness
 - ✅ **Natural Language Understanding**: Handles conversational inputs
 - ✅ **Real Tool Integration**: GitHub Issues API with retry logic
