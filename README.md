@@ -1,8 +1,34 @@
 # Procode Agent Framework
 
-A production-ready, multi-agent system built on the A2A (Agent-to-Agent) protocol, demonstrating advanced AI capabilities with enterprise-grade features.
+**98% Cost Savings | Production-Ready | Multi-Agent System**
 
-**Status**: Active Development | Currently at Step 10 of 25 | [View Roadmap](docs/PRODUCTION_ROADMAP.md)
+A comprehensive AI agent framework that solves real production challenges: intelligent cost optimization, database persistence, security guardrails, and horizontal scalability.
+
+**Status**: Active Development | Step 10 of 25 | [View Roadmap](docs/PRODUCTION_ROADMAP.md)
+
+---
+
+## 🚀 Try it in 60 Seconds
+
+**One command to run everything:**
+
+```bash
+# Clone and start with Docker
+git clone https://github.com/yourusername/procode-agent-framework.git
+cd procode-agent-framework
+cp .env.example .env
+docker-compose up -d
+```
+
+**Access the UI:**
+- Frontend: http://localhost:3001
+- Agent API: http://localhost:9998
+
+**That's it!** The system works out of the box with deterministic routing. Add your `ANTHROPIC_API_KEY` to `.env` for LLM-powered intelligence.
+
+![Procode Agent Dashboard](screenshots/dashboard.png)
+
+---
 
 ## What Makes This Different
 
@@ -14,6 +40,7 @@ This isn't just another chatbot wrapper. It's a comprehensive framework that sol
 - **Production Security**: Enhanced guardrails, PII detection, rate limiting, audit logging
 - **Real-time Streaming**: Server-Sent Events for responsive user experience
 - **Agent-to-Agent Communication**: Built on the A2A protocol for multi-agent workflows
+- **Docker Ready**: One-command deployment with docker-compose
 
 ## Current Capabilities (Step 10/25)
 
@@ -39,7 +66,37 @@ This isn't just another chatbot wrapper. It's a comprehensive framework that sol
 - Makefile for common operations
 - Extensive documentation
 
-## Quick Start
+## Quick Start Options
+
+### Option 1: Docker (Recommended - 60 seconds)
+
+```bash
+# 1. Clone and setup
+git clone https://github.com/yourusername/procode-agent-framework.git
+cd procode-agent-framework
+cp .env.example .env
+
+# 2. Add your API key (optional)
+echo "ANTHROPIC_API_KEY=your-key-here" >> .env
+
+# 3. Start everything
+docker-compose up -d
+
+# 4. Open your browser
+open http://localhost:3001
+```
+
+**Services running:**
+- Frontend UI: http://localhost:3001
+- Agent API: http://localhost:9998
+- PostgreSQL: localhost:5433
+
+**Stop services:**
+```bash
+docker-compose down
+```
+
+### Option 2: Local Development
 
 ```bash
 # Install dependencies
@@ -52,7 +109,17 @@ make start
 make console
 ```
 
-That's it. The agent works out of the box with deterministic matching. Add an API key for LLM-powered intent classification.
+The agent works out of the box with deterministic matching. Add an API key for LLM-powered intent classification.
+
+### Option 3: Web Interface
+
+```bash
+# Streamlit (Simple)
+make streamlit-app  # http://localhost:8501
+
+# Next.js (Production-ready)
+cd frontend && npm install && npm run dev  # http://localhost:3000
+```
 
 ## Cost Optimization
 
@@ -100,6 +167,7 @@ The multi-LLM classifier automatically routes simple queries (greetings, basic i
 
 ### Getting Started
 - [Quick Start Guide](QUICKSTART.md) - Get up and running in 5 minutes
+- [Docker Deployment](docs/DOCKER_DEPLOYMENT.md) - Containerized deployment guide
 - [Console App Guide](docs/CONSOLE_APP.md) - Interactive CLI usage
 - [Project Structure](docs/STRUCTURE.md) - Codebase organization
 
@@ -144,10 +212,44 @@ We're building this framework systematically, one production feature at a time. 
 
 **Phase 5: Production Readiness** (Steps 23-25)
 - [ ] Step 23: CI/CD Pipeline
-- [ ] Step 24: Docker & Kubernetes
+- [x] Step 24: Docker & Kubernetes (Docker Complete)
 - [ ] Step 25: Production Deployment Guide
 
 [View detailed roadmap with timelines](docs/PRODUCTION_ROADMAP.md)
+
+## Docker Deployment
+
+The framework is fully containerized with production-ready Docker setup:
+
+```bash
+# Start all services (PostgreSQL + Agent + Frontend)
+docker-compose up -d
+
+# View logs
+docker logs procode-agent
+docker logs procode-frontend
+docker logs procode-postgres
+
+# Run database migrations
+docker exec procode-agent alembic upgrade head
+
+# Stop services
+docker-compose down
+
+# Rebuild after code changes
+docker-compose build
+docker-compose up -d
+```
+
+**What's included:**
+- Multi-stage Docker builds for optimization
+- PostgreSQL database with health checks
+- Next.js frontend with standalone output
+- Non-root container users for security
+- Volume persistence for data
+- CORS configured for cross-origin requests
+
+See [Docker Deployment Guide](docs/DOCKER_DEPLOYMENT.md) for advanced configuration.
 
 ## Configuration
 

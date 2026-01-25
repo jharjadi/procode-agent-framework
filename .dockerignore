@@ -32,8 +32,7 @@ logs/
 
 # Documentation
 docs/
-*.md
-!README.md
+QUICKSTART.md
 
 # Tests
 tests/

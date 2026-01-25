@@ -16,10 +16,10 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:9998";
 // Custom service adapter for our Python backend
 const customAdapter = new OpenAIAdapter({
   model: "gpt-4", // This is just for CopilotKit's internal tracking
-});
+}) as any;
 
 // Override the adapter's execute method to call our backend
-const originalExecute = customAdapter.execute.bind(customAdapter);
+const originalExecute = customAdapter.execute?.bind(customAdapter);
 customAdapter.execute = async function(params: any) {
   try {
     // Extract the user's message from CopilotKit format

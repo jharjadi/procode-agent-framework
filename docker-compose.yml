@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"  # Map to 5433 on host to avoid conflicts
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U procode_user -d procode"]
       interval: 10s
@@ -68,7 +68,7 @@ services:
     environment:
       NEXT_PUBLIC_AGENT_URL: http://agent:9998
     ports:
-      - "3000:3000"
+      - "3001:3000"  # Map to 3001 on host to avoid conflicts with local dev server
     depends_on:
       - agent
     networks:
