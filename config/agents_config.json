@@ -1,0 +1,49 @@
+{
+    "agents": [
+        {
+            "name": "ticket_agent",
+            "url": "http://localhost:9999",
+            "capabilities": [
+                "tickets",
+                "support",
+                "issue_tracking"
+            ],
+            "description": "Agent specialized in ticket management and support operations",
+            "version": "1.0.0",
+            "metadata": {
+                "type": "mock",
+                "environment": "development"
+            }
+        },
+        {
+            "name": "analytics_agent",
+            "url": "http://localhost:9997",
+            "capabilities": [
+                "analytics",
+                "reporting",
+                "data_analysis"
+            ],
+            "description": "Agent specialized in data analytics and reporting",
+            "version": "1.0.0",
+            "metadata": {
+                "type": "mock",
+                "environment": "development"
+            }
+        },
+        {
+            "name": "notification_agent",
+            "url": "http://localhost:9996",
+            "capabilities": [
+                "notifications",
+                "alerts",
+                "messaging"
+            ],
+            "description": "Agent specialized in sending notifications and alerts",
+            "version": "1.0.0",
+            "metadata": {
+                "type": "mock",
+                "environment": "development"
+            }
+        }
+    ]
+}
