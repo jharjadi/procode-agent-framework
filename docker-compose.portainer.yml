@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: procode-postgres
+    environment:
+      POSTGRES_DB: procode
+      POSTGRES_USER: procode_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # Using 5433 on host to avoid conflicts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U procode_user -d procode"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - procode-network
+    restart: unless-stopped
+
+  # Procode Agent (using pre-built image from Docker Hub)
+  agent:
+    image: tempolong/procode-agent:latest
+    container_name: procode-agent
+    environment:
+      # Database
+      DATABASE_URL: postgresql://procode_user:${POSTGRES_PASSWORD}@postgres:5432/procode
+      USE_DATABASE: "true"
+      DB_POOL_SIZE: 10
+      DB_MAX_OVERFLOW: 20
+      
+      # LLM API Keys
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      
+      # Configuration
+      USE_LLM_INTENT: "true"
+      CONVERSATION_WINDOW_SIZE: 10
+      
+      # API Security (Step 12)
+      ENABLE_API_SECURITY: ${ENABLE_API_SECURITY:-false}
+      DEMO_API_KEY: ${DEMO_API_KEY:-}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-10}
+      RATE_LIMIT_PER_HOUR: ${RATE_LIMIT_PER_HOUR:-100}
+      RATE_LIMIT_PER_DAY: ${RATE_LIMIT_PER_DAY:-1000}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
+      
+      # GitHub (optional)
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_REPO: ${GITHUB_REPO:-}
+      USE_REAL_TOOLS: ${USE_REAL_TOOLS:-false}
+    ports:
+      - "9998:9998"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - procode-network
+    restart: unless-stopped
+
+  # Frontend (using pre-built image from Docker Hub)
+  frontend:
+    image: tempolong/procode-frontend:latest
+    container_name: procode-frontend
+    environment:
+      # Backend URL for API routes (server-side, can use runtime env vars)
+      BACKEND_URL: ${BACKEND_URL:-https://apiproagent.harjadi.com}
+      # API Key for authentication (must match backend)
+      DEMO_API_KEY: ${DEMO_API_KEY:-}
+    ports:
+      - "3001:3000"  # Using 3001 on host to avoid conflicts
+    depends_on:
+      - agent
+    networks:
+      - procode-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  procode-network:
+    driver: bridge

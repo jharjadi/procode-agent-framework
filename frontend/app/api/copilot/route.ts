@@ -11,8 +11,13 @@ import {
  * This creates a custom adapter that forwards requests to our Python backend
  */
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_AGENT_URL || process.env.BACKEND_URL || "http://localhost:9998";
+// For API routes, we can use regular env vars (not NEXT_PUBLIC_)
+// because API routes run on the server side
+const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_AGENT_URL || "http://agent:9998";
 const DEMO_API_KEY = process.env.DEMO_API_KEY || "";
+
+console.log("Backend URL:", BACKEND_URL);
+console.log("API Key configured:", !!DEMO_API_KEY);
 
 // Custom service adapter for our Python backend
 const customAdapter = new OpenAIAdapter({
