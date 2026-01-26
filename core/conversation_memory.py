@@ -108,6 +108,7 @@ class ConversationMemory:
                 try:
                     self._conversation_repo.create_conversation(
                         user_id=user_id,
+                        conversation_id=conversation_id,  # Pass the UUID
                         title=f"Conversation {conversation_id[:8]}",
                         intent=intent
                     )

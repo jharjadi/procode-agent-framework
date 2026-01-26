@@ -26,6 +26,7 @@ class ConversationRepository:
     def create_conversation(
         self,
         user_id: int,
+        conversation_id: Optional[str] = None,
         title: Optional[str] = None,
         intent: Optional[str] = None
     ) -> Conversation:
@@ -34,6 +35,7 @@ class ConversationRepository:
         
         Args:
             user_id: User ID
+            conversation_id: Optional conversation ID (UUID string)
             title: Conversation title
             intent: Detected intent
             
@@ -41,6 +43,7 @@ class ConversationRepository:
             Created conversation
         """
         conversation = Conversation(
+            id=conversation_id,  # Use provided ID if given
             user_id=user_id,
             title=title or f"Conversation {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}",
             intent=intent,
@@ -50,12 +53,12 @@ class ConversationRepository:
         self.db.flush()  # Get the ID without committing
         return conversation
     
-    def get_conversation(self, conversation_id: int) -> Optional[Conversation]:
+    def get_conversation(self, conversation_id: str) -> Optional[Conversation]:
         """
         Get conversation by ID.
         
         Args:
-            conversation_id: Conversation ID
+            conversation_id: Conversation ID (UUID string)
             
         Returns:
             Conversation or None
@@ -92,7 +95,7 @@ class ConversationRepository:
     
     def update_conversation(
         self,
-        conversation_id: int,
+        conversation_id: str,
         title: Optional[str] = None,
         intent: Optional[str] = None,
         status: Optional[str] = None
@@ -101,7 +104,7 @@ class ConversationRepository:
         Update conversation.
         
         Args:
-            conversation_id: Conversation ID
+            conversation_id: Conversation ID (UUID string)
             title: New title
             intent: New intent
             status: New status
@@ -124,12 +127,12 @@ class ConversationRepository:
         
         return conversation
     
-    def delete_conversation(self, conversation_id: int) -> bool:
+    def delete_conversation(self, conversation_id: str) -> bool:
         """
         Delete conversation (soft delete by setting status).
         
         Args:
-            conversation_id: Conversation ID
+            conversation_id: Conversation ID (UUID string)
             
         Returns:
             True if deleted, False otherwise
@@ -146,7 +149,7 @@ class ConversationRepository:
     
     def add_message(
         self,
-        conversation_id: int,
+        conversation_id: str,
         role: str,
         content: str,
         message_id: Optional[str] = None,
@@ -159,7 +162,7 @@ class ConversationRepository:
         Add message to conversation.
         
         Args:
-            conversation_id: Conversation ID
+            conversation_id: Conversation ID (UUID string)
             role: Message role (user, assistant, system)
             content: Message content
             message_id: External message ID
@@ -193,14 +196,14 @@ class ConversationRepository:
     
     def get_conversation_messages(
         self,
-        conversation_id: int,
+        conversation_id: str,
         limit: Optional[int] = None
     ) -> List[Message]:
         """
         Get messages for a conversation.
         
         Args:
-            conversation_id: Conversation ID
+            conversation_id: Conversation ID (UUID string)
             limit: Maximum number of messages (most recent)
             
         Returns:
@@ -219,12 +222,12 @@ class ConversationRepository:
         
         return query.all()
     
-    def get_conversation_cost(self, conversation_id: int) -> float:
+    def get_conversation_cost(self, conversation_id: str) -> float:
         """
         Calculate total cost for a conversation.
         
         Args:
-            conversation_id: Conversation ID
+            conversation_id: Conversation ID (UUID string)
             
         Returns:
             Total cost
