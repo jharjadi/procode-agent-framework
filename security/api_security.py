@@ -8,11 +8,14 @@ This module provides security middleware for the public API including:
 """
 
 import os
+import logging
 from typing import Optional
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from security.rate_limiter import RateLimiter
+
+logger = logging.getLogger(__name__)
 
 
 class APISecurityMiddleware(BaseHTTPMiddleware):
@@ -35,6 +38,18 @@ class APISecurityMiddleware(BaseHTTPMiddleware):
         self.api_key = os.getenv("DEMO_API_KEY", "")
         self.require_api_key = bool(self.api_key)
         
+        # Log security configuration (using print for immediate visibility)
+        print("=" * 60)
+        print("API Security Middleware Initialized")
+        print(f"  Enabled: {self.enabled}")
+        print(f"  API Key Required: {self.require_api_key}")
+        print(f"  API Key Set: {'Yes' if self.api_key else 'No'}")
+        if self.api_key:
+            print(f"  API Key (first 8 chars): {self.api_key[:8]}...")
+        print(f"  ENABLE_API_SECURITY env: {os.getenv('ENABLE_API_SECURITY', 'NOT SET')}")
+        print(f"  DEMO_API_KEY env: {'SET' if os.getenv('DEMO_API_KEY') else 'NOT SET'}")
+        print("=" * 60)
+        
         # Initialize rate limiter
         if rate_limiter is None:
             requests_per_minute = int(os.getenv("RATE_LIMIT_PER_MINUTE", "10"))
@@ -46,6 +61,8 @@ class APISecurityMiddleware(BaseHTTPMiddleware):
                 requests_per_hour=requests_per_hour,
                 requests_per_day=requests_per_day
             )
+            
+            print(f"Rate Limiter: {requests_per_minute}/min, {requests_per_hour}/hr, {requests_per_day}/day")
         else:
             self.rate_limiter = rate_limiter
     

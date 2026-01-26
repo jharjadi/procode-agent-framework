@@ -1,3 +1,4 @@
+import os
 import uvicorn
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
@@ -12,6 +13,10 @@ from security.api_security import APISecurityMiddleware, get_allowed_origins
 import json
 
 if __name__ == "__main__":
+    print("Starting Procode Agent...", flush=True)
+    print(f"ENABLE_API_SECURITY={os.getenv('ENABLE_API_SECURITY', 'NOT SET')}", flush=True)
+    print(f"DEMO_API_KEY={'SET' if os.getenv('DEMO_API_KEY') else 'NOT SET'}", flush=True)
+    
     # Define skills for the principal agent
     tickets_skill = AgentSkill(
         id="tickets",
@@ -130,7 +135,9 @@ if __name__ == "__main__":
     
     # Add security middleware (rate limiting + API key validation)
     # Added AFTER CORS so it executes BEFORE CORS (reverse order)
+    print("Adding API Security Middleware...")
     app.add_middleware(APISecurityMiddleware)
+    print("API Security Middleware added")
     
     # Add custom streaming route to the Starlette app
     app.routes.append(Route("/stream", stream_endpoint, methods=["POST"]))
