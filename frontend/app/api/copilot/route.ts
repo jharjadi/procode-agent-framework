@@ -20,9 +20,9 @@ const customAdapter = new OpenAIAdapter({
 const originalExecute = customAdapter.execute?.bind(customAdapter);
 customAdapter.execute = async function(params: any) {
   try {
-    // Read environment variables at runtime (not build time)
-    const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_AGENT_URL || "http://agent:9998";
-    const DEMO_API_KEY = process.env.DEMO_API_KEY || "";
+    // Use NEXT_PUBLIC_BACKEND_URL for consistency (works both client and server side)
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://agent:9998";
+    const DEMO_API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
     
     console.log("Backend URL:", BACKEND_URL);
     console.log("API Key configured:", !!DEMO_API_KEY);

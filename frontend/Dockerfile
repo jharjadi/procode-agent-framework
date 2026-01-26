@@ -14,11 +14,11 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Accept build arguments for NEXT_PUBLIC_ environment variables
+# Accept build arguments for environment variables
 ARG NEXT_PUBLIC_BACKEND_URL
 ARG NEXT_PUBLIC_API_KEY
 
-# Set environment variables for the build
+# Set environment variables for the build (NEXT_PUBLIC_ vars are baked into the build)
 ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
 ENV NEXT_PUBLIC_API_KEY=$NEXT_PUBLIC_API_KEY
 

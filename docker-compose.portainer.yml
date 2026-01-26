@@ -64,18 +64,11 @@ services:
     restart: unless-stopped
 
   # Frontend (using pre-built image from Docker Hub)
+  # NOTE: NEXT_PUBLIC_ environment variables must be baked into the image at BUILD time
+  # They cannot be changed at runtime. The image must be rebuilt with new values.
   frontend:
     image: tempolong/procode-frontend:latest
     container_name: procode-frontend
-    environment:
-      # Backend URL for API routes (server-side, can use runtime env vars)
-      BACKEND_URL: ${BACKEND_URL:-https://apiproagent.harjadi.com}
-      # API Key for authentication (must match backend)
-      DEMO_API_KEY: ${DEMO_API_KEY:-}
-      # Client-side environment variables (baked into build at build time)
-      # These MUST be set at build time for the browser to access them
-      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://apiproagent.harjadi.com}
-      NEXT_PUBLIC_API_KEY: ${NEXT_PUBLIC_API_KEY:-}
     ports:
       - "3001:3000"  # Using 3001 on host to avoid conflicts
     depends_on:
