@@ -9,6 +9,8 @@ from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import AgentCapabilities, AgentCard, AgentSkill, Message
 from core.agent_router import ProcodeAgentRouter
+from core.custom_request_handler import MetadataTrackingRequestHandler
+from core.metadata_middleware import MetadataMiddleware
 from security.api_security import APISecurityMiddleware, get_allowed_origins
 import json
 
@@ -52,8 +54,12 @@ if __name__ == "__main__":
         supports_authenticated_extended_card=False,
     )
 
-    request_handler = DefaultRequestHandler(
-        agent_executor=ProcodeAgentRouter(),
+    # Create agent router instance (shared for middleware and handler)
+    agent_router = ProcodeAgentRouter()
+    
+    # Use custom request handler that tracks and returns classification metadata
+    request_handler = MetadataTrackingRequestHandler(
+        agent_executor=agent_router,
         task_store=InMemoryTaskStore(),
     )
 
@@ -121,9 +127,15 @@ if __name__ == "__main__":
     # Build the base app
     app = server.build()
     
+    # Add metadata middleware to inject classification metadata into responses
+    # This must be added FIRST so it executes LAST (after CORS)
+    print("Adding Metadata Middleware...")
+    app.add_middleware(MetadataMiddleware, agent_router=agent_router)
+    print("Metadata Middleware added")
+    
     # Add CORS middleware to allow frontend requests
     # Get allowed origins from environment (supports production domain restriction)
-    # NOTE: Middleware is executed in REVERSE order (LIFO), so add CORS first
+    # NOTE: Middleware is executed in REVERSE order (LIFO)
     allowed_origins = get_allowed_origins()
     app.add_middleware(
         CORSMiddleware,

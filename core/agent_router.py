@@ -129,9 +129,11 @@ class ProcodeAgentRouter(AgentExecutor):
         if self._should_delegate(text):
             result = await self._delegate_to_agent(text, context)
             intent = "delegation"
+            classification_metadata = {"used_llm": False, "provider": "delegation"}
         else:
             # Classify intent using LLM or deterministic matching
             intent = self.intent_classifier.classify_intent(text)
+            classification_metadata = self.intent_classifier.get_classification_metadata()
             
             # Route to appropriate agent based on intent
             if intent == "tickets":
@@ -158,11 +160,21 @@ class ProcodeAgentRouter(AgentExecutor):
             if not validate_output(result):
                 result = "Output validation failed"
         
-        # Store agent response in conversation history
-        memory.add_message(conversation_id, "agent", result, metadata={"intent": intent})
+        # Store agent response in conversation history with classification metadata
+        metadata = {
+            "intent": intent,
+            **classification_metadata
+        }
+        memory.add_message(conversation_id, "agent", result, metadata=metadata)
         
         # Send result as a message
-        await event_queue.enqueue_event(new_agent_text_message(result))
+        # Note: A2A protocol Message doesn't support custom metadata in the standard way
+        # The metadata is logged and stored in conversation memory for tracking
+        message = new_agent_text_message(result)
+        await event_queue.enqueue_event(message)
+        
+        # Log the classification metadata for monitoring
+        print(f"📊 Classification metadata: {metadata}")
 
     async def execute_streaming(self, context: RequestContext) -> AsyncGenerator[Part, None]:
         """

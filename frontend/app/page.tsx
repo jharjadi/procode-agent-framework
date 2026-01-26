@@ -105,10 +105,15 @@ export default function Home() {
 
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // Update metrics
+      // Update metrics - check if LLM was used from metadata
+      const usedLLM = data.result?.metadata?.used_llm || false;
+      const wasCached = data.result?.metadata?.cached || false;
+      
       setMetrics((prev) => ({
         ...prev,
         totalRequests: prev.totalRequests + 1,
+        llmCalls: usedLLM ? prev.llmCalls + 1 : prev.llmCalls,
+        cacheHits: wasCached ? prev.cacheHits + 1 : prev.cacheHits,
         currentCost: prev.currentCost + (data.result?.metadata?.cost || 0),
       }));
     } catch (error) {

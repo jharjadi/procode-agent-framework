@@ -1,5 +1,5 @@
 import os
-from typing import Literal, Optional, AsyncGenerator
+from typing import Literal, Optional, AsyncGenerator, Tuple
 import asyncio
 
 IntentType = Literal["tickets", "account", "payments", "general", "unknown"]
@@ -22,6 +22,7 @@ class IntentClassifier:
         self.use_llm = use_llm
         self.llm = None
         self.provider = None
+        self.last_used_llm = False  # Track if last classification used LLM
         
         if self.use_llm:
             self.llm, self.provider = self._initialize_llm(provider)
@@ -123,22 +124,40 @@ class IntentClassifier:
             text: User input text
             
         Returns:
-            One of: "tickets", "account", "payments", "unknown"
+            One of: "tickets", "account", "payments", "general", "unknown"
         """
         if not text or not text.strip():
+            self.last_used_llm = False
             return "unknown"
         
         # Try LLM classification first if enabled and available
         if self.use_llm and self.llm:
             try:
                 intent = self._classify_with_llm(text)
-                if intent in ["tickets", "account", "payments", "unknown"]:
+                if intent in ["tickets", "account", "payments", "general", "unknown"]:
+                    self.last_used_llm = True
+                    print(f"✓ LLM classified intent as: {intent}")
                     return intent
             except Exception as e:
                 print(f"LLM classification failed: {e}. Falling back to deterministic matching.")
         
         # Fallback to deterministic matching
+        self.last_used_llm = False
+        print(f"✓ Deterministic classification used")
         return self._classify_deterministic(text)
+    
+    def get_classification_metadata(self) -> dict:
+        """
+        Get metadata about the last classification.
+        
+        Returns:
+            Dictionary with classification metadata
+        """
+        return {
+            "used_llm": self.last_used_llm,
+            "provider": self.provider if self.last_used_llm else "deterministic",
+            "llm_enabled": self.use_llm and self.llm is not None
+        }
     
     def _classify_with_llm(self, text: str) -> IntentType:
         """
