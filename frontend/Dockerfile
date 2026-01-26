@@ -14,13 +14,21 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Accept build arguments for NEXT_PUBLIC_ environment variables
+ARG NEXT_PUBLIC_BACKEND_URL
+ARG NEXT_PUBLIC_API_KEY
+
+# Set environment variables for the build
+ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
+ENV NEXT_PUBLIC_API_KEY=$NEXT_PUBLIC_API_KEY
+
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
 # Copy application code
 COPY . .
 
-# Build the application
+# Build the application (NEXT_PUBLIC_ vars will be baked into the build)
 RUN npm run build
 
 # Production stage
