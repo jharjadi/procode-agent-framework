@@ -51,7 +51,7 @@ class Conversation(Base):
     
     __tablename__ = "conversations"
     
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String(255), primary_key=True, index=True)  # Changed to String to support UUIDs
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     
     # Conversation metadata
@@ -83,7 +83,7 @@ class Message(Base):
     __tablename__ = "messages"
     
     id = Column(Integer, primary_key=True, index=True)
-    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False, index=True)
+    conversation_id = Column(String(255), ForeignKey("conversations.id"), nullable=False, index=True)  # Changed to String to match Conversation.id
     
     # Message content
     role = Column(String(50), nullable=False)  # user, assistant, system
