@@ -8,6 +8,7 @@ from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import AgentCapabilities, AgentCard, AgentSkill, Message
 from core.agent_router import ProcodeAgentRouter
+from security.api_security import APISecurityMiddleware, get_allowed_origins
 import json
 
 if __name__ == "__main__":
@@ -116,13 +117,20 @@ if __name__ == "__main__":
     app = server.build()
     
     # Add CORS middleware to allow frontend requests
+    # Get allowed origins from environment (supports production domain restriction)
+    # NOTE: Middleware is executed in REVERSE order (LIFO), so add CORS first
+    allowed_origins = get_allowed_origins()
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:8501"],  # Frontend URLs
+        allow_origins=allowed_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    
+    # Add security middleware (rate limiting + API key validation)
+    # Added AFTER CORS so it executes BEFORE CORS (reverse order)
+    app.add_middleware(APISecurityMiddleware)
     
     # Add custom streaming route to the Starlette app
     app.routes.append(Route("/stream", stream_endpoint, methods=["POST"]))

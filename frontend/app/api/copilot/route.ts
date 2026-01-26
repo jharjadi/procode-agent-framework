@@ -12,6 +12,7 @@ import {
  */
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:9998";
+const DEMO_API_KEY = process.env.DEMO_API_KEY || "";
 
 // Custom service adapter for our Python backend
 const customAdapter = new OpenAIAdapter({
@@ -47,11 +48,18 @@ customAdapter.execute = async function(params: any) {
     };
 
     // Call Python backend
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    
+    // Add API key if configured (for production deployments)
+    if (DEMO_API_KEY) {
+      headers["X-API-Key"] = DEMO_API_KEY;
+    }
+    
     const response = await fetch(BACKEND_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify(a2aRequest),
     });
 

@@ -37,7 +37,7 @@ This isn't just another chatbot wrapper. It's a comprehensive framework that sol
 - **Cost Optimization**: Reduce LLM costs by 98% through intelligent model routing
 - **Database Persistence**: Full conversation and audit trail storage (SQLite/PostgreSQL)
 - **Multi-LLM Strategy**: Automatically route requests to the most cost-effective model
-- **Production Security**: Enhanced guardrails, PII detection, rate limiting, audit logging
+- **Production Security**: API key auth, rate limiting, CORS restriction, PII detection, audit logging
 - **Real-time Streaming**: Server-Sent Events for responsive user experience
 - **Agent-to-Agent Communication**: Built on the A2A protocol for multi-agent workflows
 - **Docker Ready**: One-command deployment with docker-compose
@@ -54,10 +54,11 @@ This isn't just another chatbot wrapper. It's a comprehensive framework that sol
 - **Tool Integration**: GitHub Issues API with hybrid mocked/real modes
 
 ### Security & Compliance
-- Input/output guardrails with PII detection
-- Rate limiting and circuit breaker patterns
-- Comprehensive audit trail
-- GDPR compliance features
+- **API Security**: API key authentication, rate limiting (10/min, 100/hr, 1000/day), CORS restriction
+- **Input/Output Guardrails**: PII detection and redaction
+- **Circuit Breaker**: Automatic failure recovery patterns
+- **Audit Trail**: Comprehensive logging to files and database
+- **GDPR Compliance**: Data retention and privacy features
 
 ### Developer Experience
 - Interactive console app with rich UI
@@ -174,6 +175,7 @@ The multi-LLM classifier automatically routes simple queries (greetings, basic i
 ### Core Features
 - [Multi-LLM Strategy](docs/MULTI_LLM_STRATEGY.md) - Cost optimization approach
 - [Database Integration](docs/DATABASE_INTEGRATION.md) - Persistence layer (Step 10)
+- [API Security](docs/API_SECURITY.md) - Rate limiting, API keys, CORS (Step 12)
 - [A2A Communication](docs/A2A_COMMUNICATION.md) - Agent-to-agent protocol
 
 ### Implementation
@@ -192,7 +194,7 @@ We're building this framework systematically, one production feature at a time. 
 **Phase 1: Core Infrastructure** (Steps 10-13)
 - [x] Step 10: Database Integration & Persistence
 - [ ] Step 11: Authentication & Authorization
-- [ ] Step 12: API Rate Limiting & Throttling
+- [x] Step 12: API Rate Limiting & Security (API keys, CORS, rate limiting)
 - [ ] Step 13: Caching Layer (Redis)
 
 **Phase 2: Scalability** (Steps 14-16)
@@ -264,6 +266,12 @@ GOOGLE_API_KEY=your-key
 # Database (Step 10)
 DATABASE_URL=sqlite:///data/procode.db  # or PostgreSQL URL
 USE_DATABASE=false  # Set to true to enable persistence
+
+# API Security (Step 12)
+ENABLE_API_SECURITY=false  # Set to true for production
+DEMO_API_KEY=your-secure-key  # Generate with: openssl rand -hex 32
+RATE_LIMIT_PER_MINUTE=10
+ALLOWED_ORIGINS=https://yourdomain.com
 
 # Tool Integration (optional)
 USE_REAL_TOOLS=false
@@ -359,9 +367,10 @@ procode-agent-framework/
 │   ├── connection.py      # Database connection
 │   └── repositories/      # Data access layer
 ├── security/              # Security & compliance
+│   ├── api_security.py    # API key auth & rate limiting
 │   ├── enhanced_guardrails.py # PII detection
 │   ├── audit_logger.py    # Audit trail
-│   └── rate_limiter.py    # Rate limiting
+│   └── rate_limiter.py    # Rate limiting core
 ├── tasks/                 # Task-specific agents
 │   ├── task_tickets.py   # Support tickets
 │   ├── task_account.py   # Account management
@@ -396,12 +405,17 @@ This is an active learning project demonstrating production-ready AI agent devel
 
 Copyright (c) 2026 Jimmy Harjadi
 
-## What's Next?
+## Recent Updates
+
+**Step 12: API Security** ✅ Just completed!
+- API key authentication for public deployments
+- Rate limiting (10 req/min, 100/hr, 1000/day per IP)
+- CORS restriction to specific domains
+- Comprehensive security documentation
 
 **Step 11: Authentication & Authorization** is coming next, featuring:
 - User registration and login
 - JWT token generation
-- API key authentication
 - Role-based access control (RBAC)
 - Session management
 
