@@ -76,7 +76,7 @@ class IntentClassifier:
                 if not api_key:
                     return None, None
                 llm = ChatAnthropic(
-                    model="claude-3-5-sonnet-20240620",  # Updated to valid model name
+                    model="claude-3-haiku-20240307",
                     temperature=0.0,
                     anthropic_api_key=api_key
                 )
