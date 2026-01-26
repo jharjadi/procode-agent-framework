@@ -50,11 +50,22 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:9998/", {
+      // Use environment variable for backend URL, fallback to localhost for development
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:9998/";
+      const apiKey = process.env.NEXT_PUBLIC_API_KEY || "";
+      
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      // Add API key if configured
+      if (apiKey) {
+        headers["X-API-Key"] = apiKey;
+      }
+      
+      const response = await fetch(backendUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({
           jsonrpc: "2.0",
           method: "message/send",

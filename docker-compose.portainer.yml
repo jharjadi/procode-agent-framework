@@ -72,6 +72,10 @@ services:
       BACKEND_URL: ${BACKEND_URL:-https://apiproagent.harjadi.com}
       # API Key for authentication (must match backend)
       DEMO_API_KEY: ${DEMO_API_KEY:-}
+      # Client-side environment variables (baked into build at build time)
+      # These MUST be set at build time for the browser to access them
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://apiproagent.harjadi.com}
+      NEXT_PUBLIC_API_KEY: ${NEXT_PUBLIC_API_KEY:-}
     ports:
       - "3001:3000"  # Using 3001 on host to avoid conflicts
     depends_on:
