@@ -77,6 +77,11 @@ class APISecurityMiddleware(BaseHTTPMiddleware):
         Returns:
             Response from next handler or error response
         """
+        # Skip security for CORS preflight requests (OPTIONS method)
+        # This allows the CORS middleware to handle preflight requests properly
+        if request.method == "OPTIONS":
+            return await call_next(request)
+        
         # Skip security for health check and agent card endpoints
         if request.url.path in ["/health", "/.well-known/agent.json", "/favicon.ico"]:
             return await call_next(request)
