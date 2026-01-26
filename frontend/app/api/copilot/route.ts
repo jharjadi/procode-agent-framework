@@ -11,14 +11,6 @@ import {
  * This creates a custom adapter that forwards requests to our Python backend
  */
 
-// For API routes, we can use regular env vars (not NEXT_PUBLIC_)
-// because API routes run on the server side
-const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_AGENT_URL || "http://agent:9998";
-const DEMO_API_KEY = process.env.DEMO_API_KEY || "";
-
-console.log("Backend URL:", BACKEND_URL);
-console.log("API Key configured:", !!DEMO_API_KEY);
-
 // Custom service adapter for our Python backend
 const customAdapter = new OpenAIAdapter({
   model: "gpt-4", // This is just for CopilotKit's internal tracking
@@ -28,6 +20,13 @@ const customAdapter = new OpenAIAdapter({
 const originalExecute = customAdapter.execute?.bind(customAdapter);
 customAdapter.execute = async function(params: any) {
   try {
+    // Read environment variables at runtime (not build time)
+    const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_AGENT_URL || "http://agent:9998";
+    const DEMO_API_KEY = process.env.DEMO_API_KEY || "";
+    
+    console.log("Backend URL:", BACKEND_URL);
+    console.log("API Key configured:", !!DEMO_API_KEY);
+    
     // Extract the user's message from CopilotKit format
     const messages = params.messages || [];
     const lastMessage = messages[messages.length - 1];
