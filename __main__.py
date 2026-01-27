@@ -14,6 +14,15 @@ from core.metadata_middleware import MetadataMiddleware
 from security.api_security import APISecurityMiddleware, get_allowed_origins
 import json
 
+# Import API key authentication components (optional)
+try:
+    from core.api_key_middleware import APIKeyMiddleware
+    from api.admin_api_keys import admin_routes
+    API_KEY_AUTH_AVAILABLE = True
+except ImportError:
+    API_KEY_AUTH_AVAILABLE = False
+    print("⚠️  API Key authentication not available (missing dependencies)")
+
 if __name__ == "__main__":
     print("Starting Procode Agent...", flush=True)
     print(f"ENABLE_API_SECURITY={os.getenv('ENABLE_API_SECURITY', 'NOT SET')}", flush=True)
@@ -150,6 +159,38 @@ if __name__ == "__main__":
     print("Adding API Security Middleware...")
     app.add_middleware(APISecurityMiddleware)
     print("API Security Middleware added")
+    
+    # Add API Key authentication middleware (optional, controlled by env var)
+    enable_api_key_auth = os.getenv("ENABLE_API_KEY_AUTH", "false").lower() == "true"
+    
+    if enable_api_key_auth and API_KEY_AUTH_AVAILABLE:
+        print("Adding API Key Authentication Middleware...")
+        
+        # Define public paths that don't require API key
+        public_paths = [
+            "/health",
+            "/",
+            "/docs",
+            "/openapi.json",
+            "/redoc",
+            "/stream"  # Keep streaming endpoint public for now
+        ]
+        
+        app.add_middleware(
+            APIKeyMiddleware,
+            public_paths=public_paths
+        )
+        print("✓ API Key Authentication Middleware added")
+        
+        # Add admin routes for API key management
+        for route in admin_routes:
+            app.routes.append(route)
+        print(f"✓ Added {len(admin_routes)} admin routes")
+    else:
+        if enable_api_key_auth:
+            print("⚠️  API Key authentication enabled but not available")
+        else:
+            print("ℹ️  API Key authentication disabled (set ENABLE_API_KEY_AUTH=true to enable)")
     
     # Add custom streaming route to the Starlette app
     app.routes.append(Route("/stream", stream_endpoint, methods=["POST"]))

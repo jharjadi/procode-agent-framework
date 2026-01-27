@@ -156,3 +156,7 @@ def get_session() -> Session:
         init_db()
     
     return _SessionLocal()
+
+
+# Alias for compatibility
+get_db_session = get_db
