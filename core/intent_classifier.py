@@ -166,11 +166,13 @@ class IntentClassifier:
         prompt = f"""You are an intent classifier for a customer service system.
 
 Classify the following user message into ONE of these intents:
-- tickets: For creating, viewing, or managing support tickets
+- tickets: ONLY for creating, viewing, or managing SPECIFIC support tickets (user mentions "ticket", "issue", "problem" with details)
 - account: For account information, profile changes, or account-related queries
 - payments: For payment-related requests (note: payment actions are not supported)
-- general: For greetings, casual conversation, general questions, or friendly chat
+- general: For greetings, casual conversation, asking about capabilities, help requests, or friendly chat
 - unknown: For anything that doesn't fit the above categories
+
+IMPORTANT: Questions like "what can you do", "what can you help with", "who are you", "help" should be classified as "general", NOT "tickets".
 
 Examples:
 User: "I need to create a support ticket"
@@ -194,6 +196,18 @@ Intent: general
 User: "What can you help me with?"
 Intent: general
 
+User: "What can you do?"
+Intent: general
+
+User: "Who are you?"
+Intent: general
+
+User: "Help"
+Intent: general
+
+User: "What features do you support?"
+Intent: general
+
 User: "What's the weather today?"
 Intent: unknown
 
@@ -203,7 +217,7 @@ Intent: account
 User: "I have a problem with my order"
 Intent: tickets
 
-Now classify this message:
+Now classify this message. Remember: capability questions = general, specific issues = tickets.
 User: "{text}"
 Intent:"""
 

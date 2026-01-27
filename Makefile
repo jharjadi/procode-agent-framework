@@ -1,4 +1,4 @@
-.PHONY: help install dev start stop restart console demo test test-llm test-streaming test-a2a test-all clean lint format check-env push frontend-install frontend-dev frontend-build frontend-start frontend-clean streamlit-app
+.PHONY: help install dev start stop restart console demo test test-llm test-streaming test-a2a test-all test-auto test-watch test-coverage pre-commit-install pre-commit-run clean lint format check-env push frontend-install frontend-dev frontend-build frontend-start frontend-clean streamlit-app
 
 # Default target
 .DEFAULT_GOAL := help
@@ -95,6 +95,28 @@ test-all: ## Run all tests
 		python tests/test_streaming.py && \
 		python tests/test_agent_communication.py
 	@echo "$(GREEN)✓ All tests completed!$(NC)"
+
+test-auto: ## Run automated test suite with reporting (hypervelocity mode)
+	@echo "$(BLUE)Running automated test suite...$(NC)"
+	@if [ ! -f scripts/run-tests.sh ]; then \
+		echo "$(RED)Error: scripts/run-tests.sh not found$(NC)"; \
+		exit 1; \
+	fi
+	@./scripts/run-tests.sh
+
+test-watch: ## Watch for changes and auto-run tests (requires entr)
+	@echo "$(BLUE)Watching for changes... (Ctrl+C to stop)$(NC)"
+	@echo "$(YELLOW)Install entr if not available: brew install entr$(NC)"
+	@find . -name "*.py" -not -path "./.venv/*" | entr -c make test-auto
+
+test-coverage: ## Run tests with coverage report
+	@echo "$(BLUE)Running tests with coverage...$(NC)"
+	@. .venv/bin/activate && \
+		pip install coverage pytest pytest-cov 2>/dev/null && \
+		coverage run -m pytest tests/ && \
+		coverage report -m && \
+		coverage html
+	@echo "$(GREEN)✓ Coverage report generated in htmlcov/index.html$(NC)"
 
 test-integration: ## Run integration tests with real tools (requires GITHUB_TOKEN)
 	@echo "$(BLUE)Running integration tests...$(NC)"
@@ -301,6 +323,106 @@ cost-metrics: ## Show cost optimization metrics
 	@echo ""
 
 # ============================================================================
+# Test Automation & Pre-commit Hooks (Hypervelocity)
+# ============================================================================
+
+pre-commit-install: ## Install pre-commit hooks for automated testing
+	@echo "$(BLUE)Installing pre-commit hooks...$(NC)"
+	@. .venv/bin/activate && pip install pre-commit 2>/dev/null
+	@. .venv/bin/activate && pre-commit install
+	@echo "$(GREEN)✓ Pre-commit hooks installed!$(NC)"
+	@echo "$(YELLOW)Hooks will run automatically on git commit$(NC)"
+
+pre-commit-run: ## Run pre-commit hooks manually on all files
+	@echo "$(BLUE)Running pre-commit hooks...$(NC)"
+	@. .venv/bin/activate && pre-commit run --all-files
+
+pre-commit-update: ## Update pre-commit hooks to latest versions
+	@echo "$(BLUE)Updating pre-commit hooks...$(NC)"
+	@. .venv/bin/activate && pre-commit autoupdate
+
+pre-commit-uninstall: ## Uninstall pre-commit hooks
+	@echo "$(BLUE)Uninstalling pre-commit hooks...$(NC)"
+	@. .venv/bin/activate && pre-commit uninstall
+	@echo "$(GREEN)✓ Pre-commit hooks uninstalled$(NC)"
+
+hypervelocity-setup: install pre-commit-install ## Complete hypervelocity development setup
+	@echo "$(GREEN)✓ Hypervelocity development environment ready!$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Available commands:$(NC)"
+	@echo "  make test-auto        - Run all tests with reporting"
+	@echo "  make test-watch       - Auto-run tests on file changes"
+	@echo "  make test-coverage    - Generate coverage report"
+	@echo "  make pre-commit-run   - Run all pre-commit checks"
+	@echo "  make logs-search      - Search structured logs"
+	@echo "  make logs-tail        - Tail recent logs"
+	@echo "  make logs-errors      - Show recent errors"
+	@echo ""
+
+# ============================================================================
+# Centralized Logging Commands
+# ============================================================================
+
+logs-search: ## Search logs (use: make logs-search QUERY="your search")
+	@echo "$(BLUE)Searching logs...$(NC)"
+	@if [ -n "$(QUERY)" ]; then \
+		python3 scripts/search-logs.py --query "$(QUERY)"; \
+	else \
+		python3 scripts/search-logs.py --help; \
+	fi
+
+logs-tail: ## Show last 50 log entries
+	@echo "$(BLUE)Showing recent logs...$(NC)"
+	@python3 scripts/search-logs.py --tail --limit 50 --format compact
+
+logs-errors: ## Show recent errors
+	@echo "$(BLUE)Showing recent errors...$(NC)"
+	@python3 scripts/search-logs.py --level error --tail --limit 20
+
+logs-agent: ## Show agent execution logs
+	@echo "$(BLUE)Showing agent execution logs...$(NC)"
+	@python3 scripts/search-logs.py --event-type agent_execution --tail --limit 30
+
+logs-requests: ## Show HTTP request logs
+	@echo "$(BLUE)Showing HTTP request logs...$(NC)"
+	@python3 scripts/search-logs.py --event-type http_request --tail --limit 30
+
+logs-since: ## Show logs since time (use: make logs-since TIME="1h")
+	@if [ -z "$(TIME)" ]; then \
+		echo "$(RED)Error: Please specify TIME (e.g., make logs-since TIME=\"1h\")$(NC)"; \
+		exit 1; \
+	fi
+	@echo "$(BLUE)Showing logs since $(TIME)...$(NC)"
+	@python3 scripts/search-logs.py --since "$(TIME)" --format compact
+
+logs-clean: ## Clean old log files (keeps last 7 days)
+	@echo "$(BLUE)Cleaning old logs...$(NC)"
+	@find logs/structured -name "*.jsonl*" -mtime +7 -delete 2>/dev/null || true
+	@find logs/audit -name "*.jsonl" -mtime +7 -delete 2>/dev/null || true
+	@find test-reports -name "*.txt" -mtime +7 -delete 2>/dev/null || true
+	@echo "$(GREEN)✓ Old logs cleaned$(NC)"
+
+logs-stats: ## Show log statistics
+	@echo "$(BLUE)Log Statistics:$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Structured Logs:$(NC)"
+	@if [ -d "logs/structured" ]; then \
+		find logs/structured -name "*.jsonl" -exec wc -l {} + | tail -1 | awk '{print "  Total entries: " $$1}'; \
+		du -sh logs/structured | awk '{print "  Disk usage:    " $$1}'; \
+	else \
+		echo "  No structured logs found"; \
+	fi
+	@echo ""
+	@echo "$(YELLOW)Test Reports:$(NC)"
+	@if [ -d "test-reports" ]; then \
+		ls -1 test-reports/*.txt 2>/dev/null | wc -l | awk '{print "  Total reports: " $$1}'; \
+		du -sh test-reports 2>/dev/null | awk '{print "  Disk usage:    " $$1}'; \
+	else \
+		echo "  No test reports found"; \
+	fi
+	@echo ""
+
+# ============================================================================
 # Streamlit Web UI (Simple Alternative)
 # ============================================================================
 
@@ -308,3 +430,57 @@ streamlit-app: ## Start Streamlit web UI (simple, working alternative to Next.js
 	@echo "$(BLUE)Starting Streamlit web UI...$(NC)"
 	@echo "$(YELLOW)Make sure backend is running: make start$(NC)"
 	@. .venv/bin/activate && pip install streamlit requests 2>/dev/null && streamlit run streamlit_app.py
+
+# ============================================================================
+# Docker Build & Push Commands
+# ============================================================================
+
+docker-build: ## Build Docker images (backend only)
+	@echo "$(BLUE)Building backend Docker image...$(NC)"
+	@docker-compose build agent
+	@echo "$(GREEN)✓ Backend image built!$(NC)"
+
+docker-build-frontend: ## Build frontend Docker image with production env vars
+	@echo "$(BLUE)Building frontend Docker image with production env vars...$(NC)"
+	@if [ -z "$$BACKEND_URL" ] || [ -z "$$API_KEY" ]; then \
+		echo "$(YELLOW)Using default production credentials...$(NC)"; \
+		BACKEND_URL=https://apiproagent.harjadi.com \
+		API_KEY=Th3zcM61GGDHMqKuYgfgZVTJF \
+		./build-frontend.sh; \
+	else \
+		./build-frontend.sh; \
+	fi
+	@echo "$(GREEN)✓ Frontend image built!$(NC)"
+
+docker-build-all: docker-build docker-build-frontend ## Build all Docker images (backend + frontend)
+	@echo "$(GREEN)✓ All Docker images built!$(NC)"
+
+docker-push: ## Push Docker images to Docker Hub
+	@echo "$(BLUE)Pushing Docker images to Docker Hub...$(NC)"
+	@./push-to-dockerhub.sh
+	@echo "$(GREEN)✓ Images pushed to Docker Hub!$(NC)"
+
+docker-buildpush: docker-build-all docker-push ## Build all images and push to Docker Hub
+	@echo "$(GREEN)✓ Build and push complete!$(NC)"
+
+docker-up: ## Start Docker containers
+	@echo "$(BLUE)Starting Docker containers...$(NC)"
+	@docker-compose up -d
+	@echo "$(GREEN)✓ Containers started!$(NC)"
+
+docker-down: ## Stop Docker containers
+	@echo "$(BLUE)Stopping Docker containers...$(NC)"
+	@docker-compose down
+	@echo "$(GREEN)✓ Containers stopped!$(NC)"
+
+docker-logs: ## Show Docker container logs
+	@echo "$(BLUE)Showing Docker logs...$(NC)"
+	@docker-compose logs -f
+
+docker-logs-agent: ## Show agent container logs
+	@echo "$(BLUE)Showing agent logs...$(NC)"
+	@docker-compose logs -f agent
+
+docker-logs-frontend: ## Show frontend container logs
+	@echo "$(BLUE)Showing frontend logs...$(NC)"
+	@docker-compose logs -f frontend

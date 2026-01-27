@@ -1,0 +1,8 @@
+Test Report - 20260127_105708
+========================================
+
+✗ FAILED: test_mock_agent.py
+Traceback (most recent call last):
+  File "/Users/jimmy/procode-agent-framework/./a2a_comm/test_mock_agent.py", line 10, in <module>
+    from a2a.server.agent_execution import AgentExecutor, RequestContext
+ModuleNotFoundError: No module named 'a2a'

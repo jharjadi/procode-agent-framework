@@ -1,0 +1,8 @@
+Test Report - 20260127_113307
+========================================
+
+✗ FAILED: test_mock_agent.py
+Traceback (most recent call last):
+  File "/Users/jimmy/procode-agent-framework/./a2a_comm/test_mock_agent.py", line 14, in <module>
+    from a2a.server.apps.jsonrpc.fastapi_app import create_jsonrpc_app
+ImportError: cannot import name 'create_jsonrpc_app' from 'a2a.server.apps.jsonrpc.fastapi_app' (/Users/jimmy/Source/a2a-samples/samples/python/agents/procode_framework/.venv/lib/python3.13/site-packages/a2a/server/apps/jsonrpc/fastapi_app.py)

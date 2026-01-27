@@ -138,12 +138,16 @@ class ProcodeAgentRouter(AgentExecutor):
             # Route to appropriate agent based on intent
             if intent == "tickets":
                 result = await self.tickets_agent.invoke(simple_context)
+                result = f"🎫 **Tickets Agent**: {result}"
             elif intent == "account":
                 result = await self.account_agent.invoke(simple_context)
+                result = f"👤 **Account Agent**: {result}"
             elif intent == "payments":
                 result = await self.payments_agent.invoke(simple_context)
+                result = f"💳 **Payments Agent**: {result}"
             elif intent == "general":
                 result = await self.general_agent.invoke(simple_context)
+                result = f"💬 **General Agent**: {result}"
             else:
                 result = "I'm not sure how to help with that. Try asking about tickets, account, or general questions!"
         
@@ -256,16 +260,25 @@ class ProcodeAgentRouter(AgentExecutor):
         
         # Route to appropriate agent and get result
         result = None
+        agent_prefix = ""
         if intent == "tickets":
             result = await self.tickets_agent.invoke(simple_context)
+            agent_prefix = "🎫 **Tickets Agent**: "
         elif intent == "account":
             result = await self.account_agent.invoke(simple_context)
+            agent_prefix = "👤 **Account Agent**: "
         elif intent == "payments":
             result = await self.payments_agent.invoke(simple_context)
+            agent_prefix = "💳 **Payments Agent**: "
         elif intent == "general":
             result = await self.general_agent.invoke(simple_context)
+            agent_prefix = "💬 **General Agent**: "
         else:
             result = "I'm not sure how to help with that. Try asking about tickets, account, or general questions!"
+        
+        # Add agent prefix to result
+        if agent_prefix:
+            result = f"{agent_prefix}{result}"
         
         # Validate and sanitize output with enhanced guardrails
         if self.use_enhanced_guardrails:
