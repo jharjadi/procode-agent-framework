@@ -113,7 +113,7 @@ def seed_api_keys():
                     )
                     VALUES (
                         :org_id, :key_prefix, :key_hash, :key_hint,
-                        :name, :environment, :scopes::jsonb
+                        :name, :environment, :scopes
                     )
                 """),
                 {
