@@ -1,15 +1,14 @@
 """
 Database Connection Management
 
-Handles database connections for both SQLite (development) and PostgreSQL (production).
+Handles PostgreSQL database connections for both development and production.
 Uses environment variables to configure the database URL.
 """
 
 import os
 from typing import Generator
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session, declarative_base
-from sqlalchemy.pool import StaticPool
 
 # Base class for all models
 Base = declarative_base()
@@ -23,7 +22,7 @@ def get_database_url() -> str:
     """
     Get database URL from environment variables.
     
-    Defaults to SQLite for development if no DATABASE_URL is set.
+    Defaults to local PostgreSQL (Docker Compose) if no DATABASE_URL is set.
     
     Returns:
         Database URL string
@@ -34,49 +33,27 @@ def get_database_url() -> str:
     if database_url:
         return database_url
     
-    # Default to SQLite for development
-    db_path = os.getenv("SQLITE_DB_PATH", "data/procode.db")
-    
-    # Create data directory if it doesn't exist
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
-    
-    return f"sqlite:///{db_path}"
+    # Default to local PostgreSQL (Docker Compose on port 5433)
+    return "postgresql://procode_user:changeme@localhost:5433/procode"
 
 
 def create_db_engine():
     """
-    Create database engine based on configuration.
+    Create PostgreSQL database engine.
     
     Returns:
         SQLAlchemy engine
     """
     database_url = get_database_url()
     
-    # SQLite-specific configuration
-    if database_url.startswith("sqlite"):
-        engine = create_engine(
-            database_url,
-            connect_args={"check_same_thread": False},
-            poolclass=StaticPool,
-            echo=os.getenv("SQL_ECHO", "false").lower() == "true"
-        )
-        
-        # Enable foreign keys for SQLite
-        @event.listens_for(engine, "connect")
-        def set_sqlite_pragma(dbapi_conn, connection_record):
-            cursor = dbapi_conn.cursor()
-            cursor.execute("PRAGMA foreign_keys=ON")
-            cursor.close()
-    
     # PostgreSQL configuration
-    else:
-        engine = create_engine(
-            database_url,
-            pool_size=int(os.getenv("DB_POOL_SIZE", "5")),
-            max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "10")),
-            pool_pre_ping=True,  # Verify connections before using
-            echo=os.getenv("SQL_ECHO", "false").lower() == "true"
-        )
+    engine = create_engine(
+        database_url,
+        pool_size=int(os.getenv("DB_POOL_SIZE", "5")),
+        max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "10")),
+        pool_pre_ping=True,  # Verify connections before using
+        echo=os.getenv("SQL_ECHO", "false").lower() == "true"
+    )
     
     return engine
 

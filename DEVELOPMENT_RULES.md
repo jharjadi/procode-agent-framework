@@ -135,16 +135,66 @@ make pre-commit-run
 4. **Commit** → Pre-commit hooks verify everything passes
 5. **Push** → CI/CD runs full test suite (future)
 
+## Database (PostgreSQL)
+
+### Local Development Setup
+```bash
+# Start PostgreSQL
+docker-compose up -d postgres
+
+# Run migrations
+alembic upgrade head
+
+# Seed default data
+python scripts/seed_api_keys.py
+
+# Connect to database
+docker-compose exec postgres psql -U procode_user -d procode
+```
+
+### Database Commands
+```bash
+# Create new migration
+alembic revision -m "description"
+
+# Apply migrations
+alembic upgrade head
+
+# Rollback one migration
+alembic downgrade -1
+
+# Check current version
+alembic current
+
+# View migration history
+alembic history
+```
+
+### Why PostgreSQL Everywhere?
+- ✅ **Production Parity**: Same database in dev and prod
+- ✅ **No Surprises**: What works locally works in production
+- ✅ **Full Features**: Use PostgreSQL-specific features (JSONB, UUID, arrays)
+- ✅ **Simpler Code**: No conditional logic for different databases
+- ✅ **Better Testing**: Catch PostgreSQL-specific issues early
+
+See [`docs/POSTGRESQL_SETUP.md`](docs/POSTGRESQL_SETUP.md) for detailed documentation.
+
 ## Quick Reference
 
 ### Test Locally
 ```bash
-# Start Docker containers
+# Start all services (PostgreSQL + Agent + Frontend)
 docker-compose up -d
+
+# Or start individually
+docker-compose up -d postgres  # Database only
+docker-compose up -d agent     # Backend only
+docker-compose up -d frontend  # Frontend only
 
 # Check logs
 docker-compose logs -f agent
 docker-compose logs -f frontend
+docker-compose logs -f postgres
 
 # Test in browser
 open http://localhost:3000
