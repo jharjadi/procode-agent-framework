@@ -4,7 +4,7 @@
 
 A comprehensive AI agent framework that solves real production challenges: intelligent cost optimization, database persistence, security guardrails, and horizontal scalability.
 
-**Status**: Active Development | Step 10 of 25 | [View Roadmap](docs/PRODUCTION_ROADMAP.md)
+**Status**: Active Development | Step 11 of 25 | [View Roadmap](docs/PRODUCTION_ROADMAP.md)
 
 ---
 
@@ -37,12 +37,12 @@ This isn't just another chatbot wrapper. It's a comprehensive framework that sol
 - **Cost Optimization**: Reduce LLM costs by 98% through intelligent model routing
 - **Database Persistence**: Full conversation and audit trail storage (SQLite/PostgreSQL)
 - **Multi-LLM Strategy**: Automatically route requests to the most cost-effective model
-- **Production Security**: API key auth, rate limiting, CORS restriction, PII detection, audit logging
+- **Production Security**: Enterprise API key auth, rate limiting, CORS restriction, PII detection, audit logging
 - **Real-time Streaming**: Server-Sent Events for responsive user experience
 - **Agent-to-Agent Communication**: Built on the A2A protocol for multi-agent workflows
 - **Docker Ready**: One-command deployment with docker-compose
 
-## Current Capabilities (Step 10/25)
+## Current Capabilities (Step 11/25)
 
 ### Core Features
 - **Intent Classification**: LLM-based with deterministic fallback (Anthropic, OpenAI, Google)
@@ -54,7 +54,8 @@ This isn't just another chatbot wrapper. It's a comprehensive framework that sol
 - **Tool Integration**: GitHub Issues API with hybrid mocked/real modes
 
 ### Security & Compliance
-- **API Security**: API key authentication, rate limiting (10/min, 100/hr, 1000/day), CORS restriction
+- **Enterprise API Keys**: Organization-based API key management with scopes, rate limits, and usage tracking
+- **API Security**: Rate limiting (10/min, 100/hr, 1000/day), CORS restriction, SHA-256 key hashing
 - **Input/Output Guardrails**: PII detection and redaction
 - **Circuit Breaker**: Automatic failure recovery patterns
 - **Audit Trail**: Comprehensive logging to files and database
@@ -193,7 +194,7 @@ We're building this framework systematically, one production feature at a time. 
 
 **Phase 1: Core Infrastructure** (Steps 10-13)
 - [x] Step 10: Database Integration & Persistence
-- [ ] Step 11: Authentication & Authorization
+- [x] Step 11: API Key Authentication (Enterprise-grade with organizations, scopes, usage tracking)
 - [x] Step 12: API Rate Limiting & Security (API keys, CORS, rate limiting)
 - [ ] Step 13: Caching Layer (Redis)
 
@@ -264,8 +265,11 @@ OPENAI_API_KEY=your-key
 GOOGLE_API_KEY=your-key
 
 # Database (Step 10)
-DATABASE_URL=sqlite:///data/procode.db  # or PostgreSQL URL
-USE_DATABASE=false  # Set to true to enable persistence
+DATABASE_URL=postgresql://user:pass@localhost:5433/procode  # PostgreSQL recommended
+USE_DATABASE=true  # Enable persistence
+
+# API Key Authentication (Step 11)
+ENABLE_API_KEY_AUTH=false  # Set to true to enable enterprise API key system
 
 # API Security (Step 12)
 ENABLE_API_SECURITY=false  # Set to true for production
@@ -407,19 +411,23 @@ Copyright (c) 2026 Jimmy Harjadi
 
 ## Recent Updates
 
-**Step 12: API Security** ✅ Just completed!
-- API key authentication for public deployments
+**Step 11: API Key Authentication** ✅ Just completed!
+- Enterprise-grade API key management system
+- Organization-based multi-tenancy support
+- Cryptographically secure key generation (SHA-256 hashing)
+- Scope-based authorization (read, write, admin, billing)
+- Per-key rate limiting and usage tracking
+- Admin API endpoints for key management
+- Optional (disabled by default for backward compatibility)
+- Full documentation and production deployment guide
+
+**Step 12: API Security** ✅ Previously completed!
 - Rate limiting (10 req/min, 100/hr, 1000/day per IP)
 - CORS restriction to specific domains
-- Comprehensive security documentation
+- PII detection and redaction
+- Comprehensive audit logging
 
-**Step 11: Authentication & Authorization** is coming next, featuring:
-- User registration and login
-- JWT token generation
-- Role-based access control (RBAC)
-- Session management
-
-The database models are already in place. Follow the repo to see it implemented!
+**Next up: Step 13 - Caching Layer (Redis)** for improved performance and scalability!
 
 ---
 
