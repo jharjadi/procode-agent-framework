@@ -1,6 +1,7 @@
 
 import os
 from typing import AsyncGenerator, Optional
+from datetime import datetime
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.types import Part, TextPart, Message
@@ -59,9 +60,21 @@ class ProcodeAgentRouter(AgentExecutor):
         if enable_a2a:
             self.agent_registry = get_global_registry()
             self.orchestrator = AgentOrchestrator(self.agent_registry)
+            # Load external agents configuration
+            self._load_external_agents_config()
         else:
             self.agent_registry = None
             self.orchestrator = None
+    
+    def _load_external_agents_config(self):
+        """Load external agents from configuration file."""
+        config_path = "config/external_agents.json"
+        if os.path.exists(config_path):
+            try:
+                self.agent_registry._load_from_file(config_path)
+                print(f"✓ Loaded external agents configuration from {config_path}")
+            except Exception as e:
+                print(f"⚠️ Failed to load external agents config: {e}")
 
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         # Get conversation memory
@@ -136,7 +149,10 @@ class ProcodeAgentRouter(AgentExecutor):
             classification_metadata = self.intent_classifier.get_classification_metadata()
             
             # Route to appropriate agent based on intent
-            if intent == "tickets":
+            if intent in ["insurance", "weather"]:
+                # Route to external agent
+                result = await self._route_to_external_agent(intent, text, context, conversation_id)
+            elif intent == "tickets":
                 result = await self.tickets_agent.invoke(simple_context)
                 result = f"🎫 **Tickets Agent**: {result}"
             elif intent == "account":
@@ -149,7 +165,7 @@ class ProcodeAgentRouter(AgentExecutor):
                 result = await self.general_agent.invoke(simple_context)
                 result = f"💬 **General Agent**: {result}"
             else:
-                result = "I'm not sure how to help with that. Try asking about tickets, account, or general questions!"
+                result = "I'm not sure how to help with that. Try asking about tickets, account, payments, insurance, weather, or general questions!"
         
         # Output validation with enhanced guardrails
         if self.use_enhanced_guardrails:
@@ -261,7 +277,11 @@ class ProcodeAgentRouter(AgentExecutor):
         # Route to appropriate agent and get result
         result = None
         agent_prefix = ""
-        if intent == "tickets":
+        if intent in ["insurance", "weather"]:
+            # Route to external agent
+            result = await self._route_to_external_agent(intent, text, context, conversation_id)
+            agent_prefix = ""  # External agents add their own prefix
+        elif intent == "tickets":
             result = await self.tickets_agent.invoke(simple_context)
             agent_prefix = "🎫 **Tickets Agent**: "
         elif intent == "account":
@@ -274,7 +294,7 @@ class ProcodeAgentRouter(AgentExecutor):
             result = await self.general_agent.invoke(simple_context)
             agent_prefix = "💬 **General Agent**: "
         else:
-            result = "I'm not sure how to help with that. Try asking about tickets, account, or general questions!"
+            result = "I'm not sure how to help with that. Try asking about tickets, account, payments, insurance, weather, or general questions!"
         
         # Add agent prefix to result
         if agent_prefix:
@@ -413,6 +433,78 @@ class ProcodeAgentRouter(AgentExecutor):
             return f"❌ Failed to communicate with {agent_name}: {e}"
         except Exception as e:
             return f"❌ Unexpected error during delegation: {e}"
+        finally:
+            await client.close()
+    
+    async def _route_to_external_agent(
+        self,
+        intent: str,
+        text: str,
+        context: RequestContext,
+        conversation_id: str
+    ) -> str:
+        """
+        Route request to external agent based on intent.
+        
+        Args:
+            intent: Classified intent (e.g., "insurance", "weather")
+            text: User input text
+            context: Request context
+            conversation_id: Conversation ID for tracking
+            
+        Returns:
+            Result from external agent
+        """
+        if not self.enable_a2a:
+            return f"❌ External agent routing is disabled"
+        
+        # Map intent to agent name
+        intent_to_agent = {
+            "insurance": "insurance_agent",
+            "weather": "weather_agent"
+        }
+        
+        agent_name = intent_to_agent.get(intent)
+        if not agent_name:
+            return f"❌ No external agent configured for intent: {intent}"
+        
+        # Find agent in registry
+        agent_card = self.agent_registry.get_agent(agent_name)
+        if not agent_card:
+            return f"❌ External agent '{agent_name}' not found. Is it running on its configured port?"
+        
+        # Track delegation start time
+        start_time = datetime.now()
+        
+        # Create client and delegate
+        client = AgentClient(agent_card.url)
+        try:
+            task_id = context.task_id if hasattr(context, 'task_id') else None
+            result = await client.delegate_task(text, task_id)
+            
+            # Calculate delegation time
+            delegation_time_ms = (datetime.now() - start_time).total_seconds() * 1000
+            
+            # Add emoji prefix based on agent
+            emoji_map = {
+                "insurance": "🏥",
+                "weather": "🌤️"
+            }
+            emoji = emoji_map.get(intent, "🔗")
+            
+            # Log delegation metrics
+            print(f"📊 External agent delegation: {agent_name} ({delegation_time_ms:.2f}ms)")
+            
+            return f"{emoji} **{agent_card.name.replace('_', ' ').title()}**: {result}"
+            
+        except AgentCommunicationError as e:
+            error_msg = f"❌ Failed to communicate with {agent_name}: {e}"
+            print(f"⚠️ {error_msg}")
+            return f"{error_msg}\n\n💡 Tip: Make sure the {agent_name} is running on {agent_card.url}"
+        except Exception as e:
+            error_msg = f"❌ Unexpected error communicating with {agent_name}: {e}"
+            print(f"⚠️ {error_msg}")
+            return error_msg
         finally:
             await client.close()
     

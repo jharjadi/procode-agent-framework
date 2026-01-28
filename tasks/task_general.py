@@ -27,6 +27,8 @@ class GeneralAgent:
 • 🎫 **Support Tickets** - Create and manage support tickets for issues
 • 👤 **Account Management** - View and update your account information
 • 💳 **Payment Inquiries** - Answer questions about payments (note: actual payment processing is not available)
+• 🌤️ **EXT: Weather Information** - Get current weather and forecasts for any location worldwide
+• 🏥 **EXT: Insurance Services** - Manage insurance policies, get policy information, and create new policies
 
 Just let me know what you need, and I'll be happy to assist!"""
         
@@ -124,10 +126,10 @@ What would you like to know about your account?"""
             return "Not much! Just here to help you out. What can I do for you today?"
         
         # Check for out-of-scope questions (religion, philosophy, calculations, etc.)
+        # Note: weather and insurance are now handled by external agents
         out_of_scope_keywords = [
             "religion", "buddhism", "christianity", "islam", "hinduism", "god",
             "calculate", "math", "equation", "solve", "compute",
-            "weather", "temperature", "forecast", "climate",
             "write code", "program", "script", "function",
             "meaning of life", "philosophy", "existence",
             "recipe", "cook", "food", "restaurant",

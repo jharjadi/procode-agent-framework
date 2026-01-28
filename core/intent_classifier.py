@@ -2,7 +2,7 @@ import os
 from typing import Literal, Optional, AsyncGenerator, Tuple
 import asyncio
 
-IntentType = Literal["tickets", "account", "payments", "general", "unknown"]
+IntentType = Literal["tickets", "account", "payments", "general", "insurance", "weather", "unknown"]
 
 class IntentClassifier:
     """
@@ -134,7 +134,7 @@ class IntentClassifier:
         if self.use_llm and self.llm:
             try:
                 intent = self._classify_with_llm(text)
-                if intent in ["tickets", "account", "payments", "general", "unknown"]:
+                if intent in ["tickets", "account", "payments", "general", "insurance", "weather", "unknown"]:
                     self.last_used_llm = True
                     print(f"✓ LLM classified intent as: {intent}")
                     return intent
@@ -163,13 +163,20 @@ class IntentClassifier:
         """
         Use LLM to classify intent.
         """
-        prompt = f"""You are an intent classifier for a customer service system.
+        prompt = f"""You are an intent classifier for a multi-agent customer service system.
 
 Classify the following user message into ONE of these intents:
+
+INTERNAL AGENTS:
 - tickets: ONLY for creating, viewing, or managing SPECIFIC support tickets (user mentions "ticket", "issue", "problem" with details)
 - account: For account information, profile changes, or account-related queries
 - payments: For payment-related requests (note: payment actions are not supported)
 - general: For greetings, casual conversation, asking about capabilities, help requests, or friendly chat
+
+EXTERNAL AGENTS:
+- insurance: For insurance policies, coverage, claims, premiums, policy management
+- weather: For weather information, forecasts, temperature, climate conditions
+
 - unknown: For anything that doesn't fit the above categories
 
 IMPORTANT: Questions like "what can you do", "what can you help with", "who are you", "help" should be classified as "general", NOT "tickets".
@@ -209,7 +216,16 @@ User: "What features do you support?"
 Intent: general
 
 User: "What's the weather today?"
-Intent: unknown
+Intent: weather
+
+User: "Show me the forecast for Melbourne"
+Intent: weather
+
+User: "I need insurance coverage"
+Intent: insurance
+
+User: "What's my policy number?"
+Intent: insurance
 
 User: "Can you help me with my profile?"
 Intent: account
@@ -224,8 +240,12 @@ Intent:"""
         response = self.llm.invoke(prompt)
         intent_text = response.content.strip().lower()
         
-        # Extract intent from response
-        if "tickets" in intent_text:
+        # Extract intent from response (check external agents first for priority)
+        if "insurance" in intent_text:
+            return "insurance"
+        elif "weather" in intent_text:
+            return "weather"
+        elif "tickets" in intent_text:
             return "tickets"
         elif "account" in intent_text:
             return "account"
@@ -243,7 +263,20 @@ Intent:"""
         """
         text_lower = text.strip().lower()
         
-        # Greeting and general conversation keywords (check first)
+        # External agent keywords (check first for priority routing)
+        insurance_keywords = ["insurance", "policy", "policies", "coverage", "premium",
+                             "claim", "claims", "insure", "insured", "deductible",
+                             "beneficiary", "policyholder"]
+        if any(keyword in text_lower for keyword in insurance_keywords):
+            return "insurance"
+        
+        weather_keywords = ["weather", "forecast", "temperature", "rain", "sunny",
+                           "cloudy", "climate", "meteorology", "humidity", "wind",
+                           "storm", "snow", "precipitation"]
+        if any(keyword in text_lower for keyword in weather_keywords):
+            return "weather"
+        
+        # Greeting and general conversation keywords
         greeting_keywords = ["hello", "hi", "hey", "good morning", "good afternoon",
                             "good evening", "greetings", "how are you", "what's up",
                             "thanks", "thank you", "bye", "goodbye", "what can you do",
@@ -251,7 +284,7 @@ Intent:"""
         if any(keyword in text_lower for keyword in greeting_keywords):
             return "general"
         
-        # Payment-related keywords (check first as they're more specific)
+        # Payment-related keywords
         payment_keywords = ["payment", "pay", "billing", "invoice", "charge", "bill"]
         if any(keyword in text_lower for keyword in payment_keywords):
             return "payments"
@@ -297,7 +330,7 @@ Intent:"""
                 
                 intent = await self._classify_with_llm_async(text)
                 
-                if intent in ["tickets", "account", "payments", "unknown"]:
+                if intent in ["tickets", "account", "payments", "general", "insurance", "weather", "unknown"]:
                     yield (f"✓ Intent identified: {intent}", intent)
                     return
             except Exception as e:

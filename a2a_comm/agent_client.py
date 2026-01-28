@@ -98,8 +98,8 @@ class AgentClient:
             "id": self._get_next_request_id()
         }
         
-        if context:
-            payload["params"]["context"] = context.model_dump()
+        # Note: context is not serialized in the payload as it's handled internally
+        # by the A2A protocol
         
         # Retry logic
         last_error = None
@@ -177,10 +177,9 @@ class AgentClient:
         
         # Create context if task_id provided
         context = None
-        if task_id or metadata:
-            context = ExecutionContext(
-                task_id=task_id or str(uuid.uuid4()),
-                metadata=metadata or {}
+        if task_id:
+            context = RequestContext(
+                task_id=task_id or str(uuid.uuid4())
             )
         
         # Send message

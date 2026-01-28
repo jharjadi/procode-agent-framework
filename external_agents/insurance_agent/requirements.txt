@@ -1,0 +1,14 @@
+# Core A2A dependencies
+a2a-sdk>=0.1.0
+
+# Web framework
+httpx>=0.24.0
+
+# Data validation
+pydantic>=2.0.0
+
+# Configuration
+pyyaml>=6.0
+
+# Async support
+asyncio>=3.4.3

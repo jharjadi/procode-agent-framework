@@ -1,0 +1,40 @@
+{
+  "agents": [
+    {
+      "name": "insurance_agent",
+      "url": "http://host.docker.internal:9997",
+      "capabilities": [
+        "insurance-info",
+        "insurance-creation",
+        "policy-management"
+      ],
+      "description": "Insurance policy management system with complex routing pattern",
+      "version": "1.0.0",
+      "metadata": {
+        "pattern": "complex",
+        "task_agents": [
+          "insurance_info",
+          "insurance_creation"
+        ],
+        "port": 9997
+      }
+    },
+    {
+      "name": "weather_agent",
+      "url": "http://host.docker.internal:9996",
+      "capabilities": [
+        "current-weather",
+        "weather-forecast",
+        "weather-alerts",
+        "historical-weather"
+      ],
+      "description": "Weather information service with simple all-in-one pattern",
+      "version": "1.0.0",
+      "metadata": {
+        "pattern": "simple",
+        "task_agents": [],
+        "port": 9996
+      }
+    }
+  ]
+}

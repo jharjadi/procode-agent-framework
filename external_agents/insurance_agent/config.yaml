@@ -1,0 +1,29 @@
+agent:
+  name: insurance_agent
+  version: 1.0.0
+  port: 9997
+  pattern: complex  # Principal + Task Agents
+
+capabilities:
+  - insurance-info
+  - insurance-creation
+  - policy-management
+
+routing:
+  default_task: info
+  intent_keywords:
+    info: ["get", "check", "show", "details", "coverage", "quote", "premium", "view", "display", "what", "how much"]
+    creation: ["create", "new", "update", "modify", "cancel", "delete", "change", "add", "remove"]
+
+resources:
+  max_concurrent_requests: 100
+  timeout_seconds: 30
+
+security:
+  enable_api_key_auth: false
+  enable_rate_limiting: true
+  rate_limit_per_minute: 60
+
+logging:
+  level: INFO
+  format: json
