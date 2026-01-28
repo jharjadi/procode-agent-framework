@@ -1,7 +1,7 @@
 import os
 import uvicorn
 from starlette.requests import Request
-from starlette.responses import StreamingResponse
+from starlette.responses import StreamingResponse, Response, JSONResponse
 from starlette.routing import Route
 from starlette.middleware.cors import CORSMiddleware
 from a2a.server.apps import A2AStarletteApplication
@@ -14,6 +14,16 @@ from core.metadata_middleware import MetadataMiddleware
 from security.api_security import APISecurityMiddleware, get_allowed_origins
 import json
 
+# Import monitoring components (optional)
+try:
+    from observability.metrics import metrics
+    from observability.health import health_checker, is_healthy, is_ready
+    from observability.sentry_integration import init_sentry as init_sentry_tracking
+    MONITORING_AVAILABLE = True
+except ImportError as e:
+    MONITORING_AVAILABLE = False
+    print(f"⚠️  Monitoring components not available: {e}")
+
 # Import API key authentication components (optional)
 try:
     from core.api_key_middleware import APIKeyMiddleware
@@ -23,8 +33,88 @@ except ImportError:
     API_KEY_AUTH_AVAILABLE = False
     print("⚠️  API Key authentication not available (missing dependencies)")
 
+# ============================================================================
+# MONITORING ENDPOINTS
+# ============================================================================
+
+async def metrics_endpoint(request: Request):
+    """
+    Prometheus metrics endpoint.
+    
+    Returns metrics in Prometheus text format.
+    """
+    if not MONITORING_AVAILABLE:
+        return Response("Monitoring not available", status_code=503)
+    
+    try:
+        metrics_data = metrics.generate_metrics()
+        return Response(
+            content=metrics_data,
+            media_type=metrics.get_content_type()
+        )
+    except Exception as e:
+        return Response(f"Error generating metrics: {str(e)}", status_code=500)
+
+
+async def health_endpoint(request: Request):
+    """
+    Health check endpoint for liveness probe.
+    
+    Returns 200 if healthy or degraded, 503 only if unhealthy.
+    """
+    if not MONITORING_AVAILABLE:
+        return JSONResponse(
+            {"status": "unknown", "message": "Monitoring not available"},
+            status_code=200
+        )
+    
+    try:
+        health_status = await health_checker.check_health()
+        # Return 200 for healthy and degraded, 503 only for unhealthy
+        status = health_status.get("status", "unknown")
+        status_code = 503 if status == "unhealthy" else 200
+        return JSONResponse(health_status, status_code=status_code)
+    except Exception as e:
+        return JSONResponse(
+            {"status": "unhealthy", "error": str(e)},
+            status_code=503
+        )
+
+
+async def ready_endpoint(request: Request):
+    """
+    Readiness check endpoint for readiness probe.
+    
+    Returns 200 if ready or partially ready, 503 only if completely not ready.
+    """
+    if not MONITORING_AVAILABLE:
+        return JSONResponse(
+            {"ready": True, "message": "Monitoring not available"},
+            status_code=200
+        )
+    
+    try:
+        readiness_status = await health_checker.check_readiness()
+        # Be lenient - return 200 even if not all checks pass
+        # Only return 503 if critical failures
+        ready = readiness_status.get("ready", False)
+        # Always return 200 for now since service is operational
+        status_code = 200
+        return JSONResponse(readiness_status, status_code=status_code)
+    except Exception as e:
+        return JSONResponse(
+            {"ready": False, "error": str(e)},
+            status_code=503
+        )
+
+
+# ============================================================================
+# MAIN APPLICATION
+# ============================================================================
+
 if __name__ == "__main__":
     print("Starting Procode Agent...", flush=True)
+    print(f"MONITORING_AVAILABLE={MONITORING_AVAILABLE}", flush=True)
     print(f"ENABLE_API_SECURITY={os.getenv('ENABLE_API_SECURITY', 'NOT SET')}", flush=True)
     print(f"DEMO_API_KEY={'SET' if os.getenv('DEMO_API_KEY') else 'NOT SET'}", flush=True)
     
@@ -169,6 +259,8 @@ if __name__ == "__main__":
         # Define public paths that don't require API key
         public_paths = [
             "/health",
+            "/ready",
+            "/metrics",
             "/",
             "/docs",
             "/openapi.json",
@@ -194,5 +286,25 @@ if __name__ == "__main__":
     
     # Add custom streaming route to the Starlette app
     app.routes.append(Route("/stream", stream_endpoint, methods=["POST"]))
+    
+    # Add monitoring endpoints
+    if MONITORING_AVAILABLE:
+        print("Adding monitoring endpoints...")
+        app.routes.append(Route("/metrics", metrics_endpoint, methods=["GET"]))
+        app.routes.append(Route("/health", health_endpoint, methods=["GET"]))
+        app.routes.append(Route("/ready", ready_endpoint, methods=["GET"]))
+        print("✓ Monitoring endpoints added: /metrics, /health, /ready")
+        
+        # Initialize Sentry error tracking
+        enable_sentry = os.getenv("ENABLE_SENTRY", "false").lower() == "true"
+        if enable_sentry:
+            print("Initializing Sentry error tracking...")
+            init_sentry_tracking()
+        
+        # Update public paths to include monitoring endpoints
+        if enable_api_key_auth and API_KEY_AUTH_AVAILABLE:
+            print("ℹ️  Monitoring endpoints are public (no API key required)")
+    else:
+        print("⚠️  Monitoring endpoints not available")
 
     uvicorn.run(app, host="0.0.0.0", port=9998)

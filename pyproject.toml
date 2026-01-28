@@ -23,6 +23,16 @@ dependencies = [
     "sse-starlette>=2.3.5",
     "starlette>=0.46.2",
     "uvicorn>=0.34.2",
+    # Monitoring & Observability (Step 12)
+    "prometheus-client>=0.20.0",
+    "opentelemetry-api>=1.22.0",
+    "opentelemetry-sdk>=1.22.0",
+    "opentelemetry-instrumentation-fastapi>=0.43b0",
+    "opentelemetry-instrumentation-httpx>=0.43b0",
+    "opentelemetry-instrumentation-sqlalchemy>=0.43b0",
+    "opentelemetry-exporter-otlp>=1.22.0",
+    "sentry-sdk[fastapi]>=1.40.0",
+    "psutil>=5.9.0",
 ]
 
 [tool.hatch.build.targets.wheel]
