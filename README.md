@@ -1,473 +1,343 @@
 # Procode Agent Framework
 
-**98% Cost Savings | Production-Ready | Multi-Agent System**
-
-A comprehensive AI agent framework that solves real production challenges: intelligent cost optimization, database persistence, security guardrails, and horizontal scalability.
-
-**Status**: Active Development | Step 11 of 25 | [View Roadmap](docs/PRODUCTION_ROADMAP.md)
+**A production-minded reference implementation for A2A-style agent systems**
 
 ---
 
-## 🚀 Try it in 60 Seconds
+## What This Is
 
-**One command to run everything:**
+This repository is a **learning-first, production-minded reference implementation** of an agent system built using explicit contracts, deterministic routing, guardrails, and cost-aware LLM usage.
+
+It exists to answer a simple but under-documented question:
+
+> **What does a real, inspectable, production-style agent system actually look like?**
+
+Rather than relying on opaque abstractions or "fully autonomous" claims, this project focuses on:
+
+- **clear agent boundaries**
+- **explicit intent routing**
+- **deterministic fallbacks**
+- **observable behavior**
+- **realistic operational constraints**
+
+It is **not a toy demo** — but it is also **not a finished product**.  
+It's a system being built step by step, in public, with trade-offs documented along the way.
+
+---
+
+## What This Is Not
+
+To set expectations clearly, this project does **not** attempt to solve:
+
+- long-horizon autonomous planning
+- unsupervised execution across critical systems
+- regulatory approval or legal compliance
+- trust between unknown or adversarial agents
+- "AGI-style" general intelligence
+
+Those are real problems — and **intentionally out of scope** here.
+
+---
+
+## Design Philosophy
+
+This project is guided by a few core principles:
+
+### Contracts over magic
+Agents communicate via explicit schemas and agent cards.
+
+### Determinism first, LLMs second
+LLMs enhance the system, but never replace inspectable logic.
+
+### Cost is a first-class constraint
+Model choice, routing, and fallbacks are designed with real budgets in mind.
+
+### Failure is observable
+Every request is auditable. Every decision can be traced.
+
+### Agents are deployable units
+External agents run as independent services, not hidden classes.
+
+---
+
+## Quick Start (Docker – recommended)
+
+You can run the entire system locally in about a minute.
 
 ```bash
-# Clone and start with Docker
-git clone https://github.com/yourusername/procode-agent-framework.git
+git clone https://github.com/jharjadi/procode-agent-framework.git
 cd procode-agent-framework
 cp .env.example .env
 docker-compose up -d
 ```
 
-**Access the UI:**
-- Frontend: http://localhost:3001
-- Agent API: http://localhost:9998
+### Running services
 
-**That's it!** The system works out of the box with deterministic routing. Add your `ANTHROPIC_API_KEY` to `.env` for LLM-powered intelligence.
+- **Principal Agent API**: http://localhost:9998
+- **Frontend UI (Next.js)**: http://localhost:3001
+- **PostgreSQL**: localhost:5433
+- **Weather Agent (external)**: http://localhost:9996
+- **Insurance Agent (external)**: http://localhost:9997
 
-![Procode Agent Dashboard](screenshots/dashboard.png)
+The system works **out of the box** with deterministic routing.  
+Adding an LLM API key enables enhanced intent classification.
 
 ---
 
-## What Makes This Different
+## Why Agent Cards (A2A)
 
-This isn't just another chatbot wrapper. It's a comprehensive framework that solves real production challenges:
+Each agent in this system is described using an **agent card** — a declarative contract that defines:
 
-- **Cost Optimization**: Reduce LLM costs by 98% through intelligent model routing
-- **Database Persistence**: Full conversation and audit trail storage (SQLite/PostgreSQL)
-- **Multi-LLM Strategy**: Automatically route requests to the most cost-effective model
-- **Production Security**: Enterprise API key auth, rate limiting, CORS restriction, PII detection, audit logging
-- **Real-time Streaming**: Server-Sent Events for responsive user experience
-- **Agent-to-Agent Communication**: Built on the A2A protocol for multi-agent workflows
-- **External Agents System**: Plug-and-play architecture for integrating specialized external agents
-- **Docker Ready**: One-command deployment with docker-compose
+- agent identity
+- capabilities
+- supported intents
+- routing expectations
+- security and operational constraints
 
-## Current Capabilities (Step 11/25)
+**Example:**
 
-### Core Features
-- **Intent Classification**: LLM-based with deterministic fallback (Anthropic, OpenAI, Google)
-- **Conversation Memory**: Multi-turn dialogues with context awareness
-- **Database Layer**: SQLAlchemy ORM with Alembic migrations
-- **Cost Tracking**: Per-message cost calculation and analytics
-- **Audit Logging**: Dual persistence (files + database) for compliance
-- **Streaming Responses**: Real-time SSE with progress indicators
-- **Tool Integration**: GitHub Issues API with hybrid mocked/real modes
-- **External Agents**: Weather Agent (OpenWeatherMap API) and Insurance Agent (complex routing pattern)
+```yaml
+agent:
+  name: insurance_agent
+  role: principal
+  version: 1.0.0
 
-### Security & Compliance
-- **Enterprise API Keys**: Organization-based API key management with scopes, rate limits, and usage tracking
-- **API Security**: Rate limiting (10/min, 100/hr, 1000/day), CORS restriction, SHA-256 key hashing
-- **Input/Output Guardrails**: PII detection and redaction
-- **Circuit Breaker**: Automatic failure recovery patterns
-- **Audit Trail**: Comprehensive logging to files and database
-- **GDPR Compliance**: Data retention and privacy features
-
-### Developer Experience
-- Interactive console app with rich UI
-- Streamlit and Next.js web interfaces
-- Comprehensive test suite
-- Makefile for common operations
-- Extensive documentation
-
-## Quick Start Options
-
-### Option 1: Docker (Recommended - 60 seconds)
-
-```bash
-# 1. Clone and setup
-git clone https://github.com/yourusername/procode-agent-framework.git
-cd procode-agent-framework
-cp .env.example .env
-
-# 2. Add your API key (optional)
-echo "ANTHROPIC_API_KEY=your-key-here" >> .env
-
-# 3. Start everything
-docker-compose up -d
-
-# 4. Open your browser
-open http://localhost:3001
+capabilities:
+  info:
+    intents: ["get", "check", "quote", "coverage"]
+  creation:
+    intents: ["create", "update", "cancel"]
 ```
 
-**Services running:**
-- Frontend UI: http://localhost:3001
-- Agent API: http://localhost:9998
-- PostgreSQL: localhost:5433
-- Weather Agent: http://localhost:9996 (external)
-- Insurance Agent: http://localhost:9997 (external)
+This allows agents to be:
 
-**Stop services:**
-```bash
-docker-compose down
+- **independently deployable**
+- **discoverable**
+- **replaceable**
+- **reasoned about** without reading implementation code
+
+---
+
+## Current State of the Project
+
+This repository is being built **incrementally**.  
+The system is currently at **Step 11 of 25** in a documented production roadmap.
+
+### Implemented Capabilities
+
+#### Core System
+
+-  Principal agent with deterministic routing
+-  LLM-assisted intent classification with fallback logic
+-  Multi-turn conversation memory
+-  Server-Sent Events (SSE) streaming
+-  Tool integration with mocked / real execution modes
+
+#### External Agents
+
+-  **Weather Agent** (OpenWeatherMap API, caching, standalone service)
+-  **Insurance Agent** (principal + task-agent pattern)
+
+#### Persistence & Auditability
+
+-  SQLAlchemy ORM with SQLite / PostgreSQL
+-  Alembic migrations
+-  Full audit trail (database + file logging)
+-  Conversation history persistence
+
+#### Security & Guardrails
+
+-  Optional enterprise-style API key system
+-  Rate limiting (per-IP / per-key)
+-  PII detection and redaction
+-  CORS restrictions
+-  Circuit breaker patterns
+
+---
+
+## Cost-Aware LLM Routing
+
+One of the goals of this project is to treat **LLM cost as a design constraint**, not an afterthought.
+
+The system supports:
+
+- multiple LLM providers (Anthropic, OpenAI, Google)
+- lightweight models for simple intents
+- higher-capability models only when needed
+- deterministic routing when LLMs are unavailable
+
+A detailed breakdown of the cost strategy is available here:  
+📊 [Cost Optimization Summary](docs/COST_OPTIMIZATION_SUMMARY.md)
+
+---
+
+## Architecture Overview
+
+```
+Principal Agent
+│
+├─ Intent Classification (LLM + deterministic fallback)
+├─ Task Routing
+├─ Guardrails & Audit Logging
+│
+├─ Internal Task Agents
+│   ├─ Tickets
+│   ├─ Account
+│   ├─ Payments
+│   └─ General
+│
+└─ External Agents (A2A)
+    ├─ Weather Agent (standalone service)
+    └─ Insurance Agent (principal + task agents)
 ```
 
-### Option 2: Local Development
+Each external agent runs as its own process, communicates over A2A, and can be replaced independently.
 
-```bash
-# Install dependencies
-make install
-
-# Start the agent server
-make start
-
-# In another terminal, run the interactive console
-make console
-```
-
-The agent works out of the box with deterministic matching. Add an API key for LLM-powered intent classification.
-
-### Option 3: Web Interface
-
-```bash
-# Streamlit (Simple)
-make streamlit-app  # http://localhost:8501
-
-# Next.js (Production-ready)
-cd frontend && npm install && npm run dev  # http://localhost:3000
-```
-
-## Cost Optimization
-
-One of the framework's key innovations is intelligent cost optimization:
-
-| Strategy | Cost per 10K requests/day | Annual Savings |
-|----------|---------------------------|----------------|
-| Claude Sonnet (baseline) | $225/month | - |
-| Claude Haiku | $19/month | $2,475/year |
-| **Multi-LLM Strategy** | **$6/month** | **$2,628/year** |
-| Ollama (local) | $0/month | $2,700/year |
-
-The multi-LLM classifier automatically routes simple queries (greetings, basic intents) to cheaper models like Gemini Flash, while reserving GPT-4 for complex reasoning tasks.
-
-[Read the full cost optimization strategy](docs/COST_OPTIMIZATION_SUMMARY.md)
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         Principal Agent                              │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  Intent Classifier (Multi-LLM)                               │  │
-│  │  - Complexity analysis                                       │  │
-│  │  - Model selection (Gemini/GPT-4)                           │  │
-│  │  - Deterministic fallback                                    │  │
-│  │  - External agent routing (insurance, weather)              │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                          │                                           │
-│         ┌────────────────┼────────────────┬──────────────┐         │
-│         ▼                ▼                ▼              ▼          │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐   ┌──────────┐     │
-│  │ Tickets  │    │ Account  │    │ Payments │   │ General  │     │
-│  │  Agent   │    │  Agent   │    │  Agent   │   │  Agent   │     │
-│  └──────────┘    └──────────┘    └──────────┘   └──────────┘     │
-└─────────────────────────────────────────────────────────────────────┘
-         │                 │                 │              │
-         ▼                 ▼                 ▼              ▼
-  ┌──────────┐      ┌──────────┐     ┌──────────┐  ┌──────────────┐
-  │ GitHub   │      │ Database │     │ Guardrails│  │   External   │
-  │   API    │      │  Layer   │     │ & Audit   │  │    Agents    │
-  └──────────┘      └──────────┘     └──────────┘  └──────┬───────┘
-                                                            │
-                                    ┌───────────────────────┴────────────┐
-                                    ▼                                    ▼
-                          ┌──────────────────┐              ┌──────────────────┐
-                          │  Weather Agent   │              │ Insurance Agent  │
-                          │  (Port 9996)     │              │  (Port 9997)     │
-                          │                  │              │                  │
-                          │  • Principal     │              │  • Principal     │
-                          │  • OpenWeather   │              │  • Info Agent    │
-                          │    API           │              │  • Creation      │
-                          │  • Caching       │              │    Agent         │
-                          └──────────────────┘              └──────────────────┘
-```
-
-## Documentation
-
-### Getting Started
-- [Quick Start Guide](QUICKSTART.md) - Get up and running in 5 minutes
-- [Docker Deployment](docs/DOCKER_DEPLOYMENT.md) - Containerized deployment guide
-- [Console App Guide](docs/CONSOLE_APP.md) - Interactive CLI usage
-- [Project Structure](docs/STRUCTURE.md) - Codebase organization
-
-### Core Features
-- [Multi-LLM Strategy](docs/MULTI_LLM_STRATEGY.md) - Cost optimization approach
-- [Database Integration](docs/DATABASE_INTEGRATION.md) - Persistence layer (Step 10)
-- [API Security](docs/API_SECURITY.md) - Rate limiting, API keys, CORS (Step 12)
-- [A2A Communication](docs/A2A_COMMUNICATION.md) - Agent-to-agent protocol
-- [External Agents System](external_agents/README.md) - Plug-and-play external agents architecture
-
-### Implementation
-- [Cost Optimization Summary](docs/COST_OPTIMIZATION_SUMMARY.md) - Quick reference
-- [Implementation Guide](docs/IMPLEMENTATION_GUIDE.md) - Step-by-step setup
-- [Development History](docs/DEVELOPMENT_HISTORY.md) - Project evolution
-
-### Roadmap
-- [Production Roadmap](docs/PRODUCTION_ROADMAP.md) - Steps 10-25 detailed plan
-- [UX Enhancement Proposal](docs/UX_ENHANCEMENT_PROPOSAL.md) - Future improvements
-
-## Development Roadmap
-
-We're building this framework systematically, one production feature at a time. Here's where we are:
-
-**Phase 1: Core Infrastructure** (Steps 10-13)
-- [x] Step 10: Database Integration & Persistence
-- [x] Step 11: API Key Authentication (Enterprise-grade with organizations, scopes, usage tracking)
-- [x] Step 12: API Rate Limiting & Security (API keys, CORS, rate limiting)
-- [ ] Step 13: Caching Layer (Redis)
-
-**Phase 2: Scalability** (Steps 14-16)
-- [ ] Step 14: Horizontal Scaling & Load Balancing
-- [ ] Step 15: Message Queue (RabbitMQ/Kafka)
-- [ ] Step 16: Monitoring & Observability
-
-**Phase 3: Advanced AI** (Steps 17-19)
-- [ ] Step 17: Vector Database & Semantic Search
-- [ ] Step 18: RAG (Retrieval-Augmented Generation)
-- [ ] Step 19: Fine-tuning & Model Optimization
-
-**Phase 4: Business Features** (Steps 20-22)
-- [ ] Step 20: Multi-tenancy Support
-- [ ] Step 21: Billing & Usage Tracking
-- [ ] Step 22: Admin Dashboard
-
-**Phase 5: Production Readiness** (Steps 23-25)
-- [ ] Step 23: CI/CD Pipeline
-- [x] Step 24: Docker & Kubernetes (Docker Complete)
-- [ ] Step 25: Production Deployment Guide
-
-[View detailed roadmap with timelines](docs/PRODUCTION_ROADMAP.md)
-
-## Docker Deployment
-
-The framework is fully containerized with production-ready Docker setup:
-
-```bash
-# Start all services (PostgreSQL + Agent + Frontend)
-docker-compose up -d
-
-# View logs
-docker logs procode-agent
-docker logs procode-frontend
-docker logs procode-postgres
-
-# Run database migrations
-docker exec procode-agent alembic upgrade head
-
-# Stop services
-docker-compose down
-
-# Rebuild after code changes
-docker-compose build
-docker-compose up -d
-```
-
-**What's included:**
-- Multi-stage Docker builds for optimization
-- PostgreSQL database with health checks
-- Next.js frontend with standalone output
-- Non-root container users for security
-- Volume persistence for data
-- CORS configured for cross-origin requests
-
-See [Docker Deployment Guide](docs/DOCKER_DEPLOYMENT.md) for advanced configuration.
+---
 
 ## Configuration
 
-### Environment Variables
+All behavior is driven via **environment variables**.  
+LLM usage is **optional**.
 
 ```bash
-# LLM Configuration (optional - works without)
-ANTHROPIC_API_KEY=your-key
-OPENAI_API_KEY=your-key
-GOOGLE_API_KEY=your-key
+# LLMs (optional)
+ANTHROPIC_API_KEY=
+OPENAI_API_KEY=
+GOOGLE_API_KEY=
 
-# Database (Step 10)
-DATABASE_URL=postgresql://user:pass@localhost:5433/procode  # PostgreSQL recommended
-USE_DATABASE=true  # Enable persistence
+# Database
+USE_DATABASE=true
+DATABASE_URL=postgresql://user:pass@localhost:5433/procode
 
-# API Key Authentication (Step 11)
-ENABLE_API_KEY_AUTH=false  # Set to true to enable enterprise API key system
-
-# API Security (Step 12)
-ENABLE_API_SECURITY=false  # Set to true for production
-DEMO_API_KEY=your-secure-key  # Generate with: openssl rand -hex 32
+# Security (optional)
+ENABLE_API_KEY_AUTH=false
+ENABLE_API_SECURITY=false
 RATE_LIMIT_PER_MINUTE=10
-ALLOWED_ORIGINS=https://yourdomain.com
 
-# External Agents
-OPENWEATHER_API_KEY=your-openweather-key  # For Weather Agent
-
-# Tool Integration (optional)
-USE_REAL_TOOLS=false
-GITHUB_TOKEN=your-token
-GITHUB_REPO=owner/repo
-
-# Conversation Settings
-CONVERSATION_WINDOW_SIZE=10
+# External agents
+OPENWEATHER_API_KEY=
+EXTERNAL_AGENTS_CONFIG=config/external_agents.production.json
 ```
 
-See [.env.example](.env.example) for all available options.
+See [`.env.example`](.env.example) for the full list.
+
+---
 
 ## Testing
 
 ```bash
-# Run all tests
 make test-all
-
-# Run specific test suites
-make test              # Unit tests
-make test-llm          # LLM integration tests
-make test-streaming    # Streaming tests
-make test-a2a          # Agent-to-agent tests
-
-# Test database integration
-python test_database.py
-
-# Test cost optimization
-python test_multi_llm.py
 ```
 
-## API Examples
+Includes:
 
-### Basic Request (JSON-RPC)
+- unit tests
+- LLM integration tests
+- streaming tests
+- agent-to-agent communication tests
+- database persistence tests
 
-```bash
-curl -X POST http://localhost:9998/ \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "jsonrpc": "2.0",
-    "method": "message/send",
-    "params": {
-      "message": {
-        "role": "user",
-        "parts": [{"kind": "text", "text": "Create a support ticket"}],
-        "messageId": "msg-001"
-      }
-    },
-    "id": 1
-  }'
-```
+---
 
-### Streaming Request (SSE)
+## Roadmap (High Level)
 
-```bash
-curl -N -X POST http://localhost:9998/stream \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "message": {
-      "role": "user",
-      "parts": [{"kind": "text", "text": "I need help with my account"}]
-    }
-  }'
-```
+### Phase 1 – Core Infrastructure
 
-## Web Interfaces
+-  Database persistence
+-  API authentication
+-  API security & rate limiting
+-  External agents system
+- ⏳ Redis caching (next)
 
-### Streamlit (Simple, Working)
-```bash
-make streamlit-app
-```
-Access at http://localhost:8501
+### Phase 2 – Scalability
 
-### Next.js (Modern, Production-Ready)
-```bash
-cd frontend
-npm install
-npm run dev
-```
-Access at http://localhost:3000
+- ⏳ Horizontal scaling
+- ⏳ Message queues
+- ⏳ Observability
 
-## Project Structure
+### Phase 3 – Advanced AI
 
-```
-procode-agent-framework/
-├── core/                    # Core agent functionality
-│   ├── agent_router.py     # Main routing logic
-│   ├── intent_classifier.py # LLM-based classification
-│   ├── multi_llm_classifier.py # Cost-optimized routing
-│   └── conversation_memory.py # Multi-turn support
-├── database/               # Database layer (Step 10)
-│   ├── models.py          # SQLAlchemy models
-│   ├── connection.py      # Database connection
-│   └── repositories/      # Data access layer
-├── security/              # Security & compliance
-│   ├── api_security.py    # API key auth & rate limiting
-│   ├── enhanced_guardrails.py # PII detection
-│   ├── audit_logger.py    # Audit trail
-│   └── rate_limiter.py    # Rate limiting core
-├── tasks/                 # Task-specific agents
-│   ├── task_tickets.py   # Support tickets
-│   ├── task_account.py   # Account management
-│   ├── task_payments.py  # Payment operations
-│   └── task_general.py   # General queries
-├── a2a_comm/             # Agent-to-Agent communication
-│   ├── agent_client.py   # A2A client for external agents
-│   ├── agent_discovery.py # Agent registry
-│   └── agent_orchestrator.py # Multi-agent coordination
-├── external_agents/      # External agents system
-│   ├── shared/          # Shared infrastructure
-│   ├── weather_agent/   # Weather Agent (OpenWeatherMap)
-│   ├── insurance_agent/ # Insurance Agent (complex routing)
-│   └── docs/           # External agents documentation
-├── frontend/             # Next.js web interface
-├── docs/                 # Comprehensive documentation
-└── tests/                # Test suite
-```
+- ⏳ Vector search
+- ⏳ RAG
+- ⏳ Model optimization
 
-## Contributing
+### Phase 4 – Business Capabilities
 
-This is an active learning project demonstrating production-ready AI agent development. While not currently accepting external contributions, feel free to:
+- ⏳ Multi-tenancy
+- ⏳ Billing & usage tracking
+- ⏳ Admin UI
 
-- Star the repo to follow progress
-- Open issues for questions or suggestions
-- Fork for your own experiments
-- Check back regularly for new features (we're at Step 10 of 25!)
+### Phase 5 – Production Readiness
 
-## Technology Stack
+- ⏳ CI/CD
+- ⏳ Deployment guides
 
-- **Framework**: A2A SDK (Agent-to-Agent protocol)
-- **LLM Providers**: Anthropic Claude, OpenAI GPT, Google Gemini
-- **Database**: SQLAlchemy (SQLite/PostgreSQL)
-- **Migrations**: Alembic
-- **Web**: Starlette, FastAPI, Next.js, Streamlit
-- **Testing**: pytest, unittest
-- **Tools**: GitHub API, Rich (CLI), CopilotKit
+**Full roadmap**: [Production Roadmap](docs/PRODUCTION_ROADMAP.md)
+
+---
+
+## Documentation
+
+### Getting Started
+- [Quick Start Guide](QUICKSTART.md)
+- [Docker Deployment](docs/DOCKER_DEPLOYMENT.md)
+- [Project Structure](docs/STRUCTURE.md)
+
+### Core Features
+- [Multi-LLM Strategy](docs/MULTI_LLM_STRATEGY.md)
+- [Database Integration](docs/DATABASE_INTEGRATION.md)
+- [API Security](docs/API_SECURITY.md)
+- [A2A Communication](docs/A2A_COMMUNICATION.md)
+
+### External Agents
+- [External Agents Overview](external_agents/README.md)
+- [Architecture](external_agents/ARCHITECTURE.md)
+- [Development Guide](external_agents/DEVELOPMENT_GUIDE.md)
+- [Quick Start](external_agents/QUICKSTART.md)
+
+### Implementation
+- [Cost Optimization Summary](docs/COST_OPTIMIZATION_SUMMARY.md)
+- [Implementation Guide](docs/IMPLEMENTATION_GUIDE.md)
+- [Development History](docs/DEVELOPMENT_HISTORY.md)
+- [Changelog](CHANGELOG.md)
+
+---
+
+## Contributing & Reuse
+
+This project is evolving quickly, and some APIs are still in flux.
+
+That said:
+
+- **issues for discussion** are welcome
+- **forks** are encouraged
+- **patterns and ideas** are free to reuse elsewhere
+
+Once the core architecture stabilises, contributions will open up more formally.
+
+---
 
 ## License
 
-[MIT License](LICENSE) - See LICENSE file for details.
+[MIT License](LICENSE) — use freely, modify responsibly.
 
 Copyright (c) 2026 Jimmy Harjadi
 
-## Recent Updates
+---
 
-**External Agents System** ✅ Just completed!
-- Plug-and-play architecture for integrating specialized external agents
-- Weather Agent with real OpenWeatherMap API integration and caching
-- Insurance Agent demonstrating complex routing pattern (Principal + 2 Task Agents)
-- Automatic intent routing to external agents
-- A2A protocol-based communication
-- Comprehensive documentation and development guides
-- Docker-ready with separate containers per agent
+## Final Note
 
-**Step 11: API Key Authentication** ✅ Previously completed!
-- Enterprise-grade API key management system
-- Organization-based multi-tenancy support
-- Cryptographically secure key generation (SHA-256 hashing)
-- Scope-based authorization (read, write, admin, billing)
-- Per-key rate limiting and usage tracking
-- Admin API endpoints for key management
-- Optional (disabled by default for backward compatibility)
-- Full documentation and production deployment guide
+This repository is **not trying to predict the future of AI agents**.
 
-**Step 12: API Security** ✅ Previously completed!
-- Rate limiting (10 req/min, 100/hr, 1000/day per IP)
-- CORS restriction to specific domains
-- PII detection and redaction
-- Comprehensive audit logging
+It's trying to make the present less confusing by showing:
 
-**Next up: Step 13 - Caching Layer (Redis)** for improved performance and scalability!
+- what works
+- what breaks
+- what trade-offs exist
+- and where human judgment is still required
+
+If it helps you reason more clearly about agent systems, then it's done its job.
 
 ---
 
