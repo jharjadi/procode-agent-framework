@@ -3,7 +3,7 @@
     {
       "name": "weather_agent",
       "description": "Weather information agent with OpenWeatherMap API integration",
-      "url": "http://weather-agent:9996",
+      "url": "https://weatherproagent.harjadi.com",
       "intents": ["weather"],
       "enabled": true,
       "timeout": 30,
@@ -13,7 +13,7 @@
     {
       "name": "insurance_agent",
       "description": "Insurance policy management agent with complex routing pattern",
-      "url": "http://insurance-agent:9997",
+      "url": "https://insuranceproagent.harjadi.com",
       "intents": ["insurance"],
       "enabled": true,
       "timeout": 30,
