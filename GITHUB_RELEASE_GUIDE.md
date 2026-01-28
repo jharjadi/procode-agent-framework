@@ -53,22 +53,15 @@ gh repo edit --enable-discussions
 
 ## Step 4: Create the Seeded Discussion
 
-### Via GitHub CLI:
-```bash
-# Create a new discussion in the Announcements category
-gh discussion create \
-  --category "Announcements" \
-  --title "Design Trade-offs: Determinism vs LLM Routing" \
-  --body-file GITHUB_DISCUSSION_SEED.md
-```
-
-### Via Web Interface:
-1. Go to Discussions tab
+### Via Web Interface (Required):
+1. Go to your repo's Discussions tab: https://github.com/jharjadi/procode-agent-framework/discussions
 2. Click "New discussion"
 3. Select "Announcements" category
 4. Title: `Design Trade-offs: Determinism vs LLM Routing`
-5. Copy content from `GITHUB_DISCUSSION_SEED.md`
+5. Copy content from `GITHUB_DISCUSSION_SEED.md` and paste into the body
 6. Click "Start discussion"
+
+**Note:** The `gh` CLI doesn't support discussions in your version, so use the web interface.
 
 ## Step 5: Pin the Repository (Optional)
 
