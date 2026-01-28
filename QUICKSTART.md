@@ -99,6 +99,10 @@ curl -X POST http://localhost:9998/ \
 ### Payment Operations
 - "Make a payment" (will be refused - stubbed for safety)
 
+### External Agents (Optional)
+- **Weather**: "What's the weather in Melbourne?" (requires OPENWEATHER_API_KEY)
+- **Insurance**: "Tell me about policy POL-123" (demo agent)
+
 ## 🗄️ Database
 
 The framework uses **PostgreSQL** for both development and production:
@@ -154,12 +158,34 @@ export GITHUB_REPO="owner/repo"
 
 Without these, the agent uses mocked tools (safe for testing).
 
+### Enable External Agents
+
+External agents run as separate services and communicate via A2A protocol.
+
+#### Weather Agent (Port 9996)
+```bash
+# Set OpenWeatherMap API key
+export OPENWEATHER_API_KEY="your-key"
+
+# Start the weather agent
+python -m external_agents.weather_agent
+```
+
+#### Insurance Agent (Port 9997)
+```bash
+# Start the insurance agent
+python -m external_agents.insurance_agent
+```
+
+See [`external_agents/README.md`](external_agents/README.md) for detailed documentation.
+
 ## 📚 Learn More
 
 - **[README.md](README.md)** - Full documentation
 - **[docs/POSTGRESQL_SETUP.md](docs/POSTGRESQL_SETUP.md)** - Database setup guide
 - **[docs/CONSOLE_APP.md](docs/CONSOLE_APP.md)** - Console app guide
 - **[docs/STRUCTURE.md](docs/STRUCTURE.md)** - Project structure
+- **[external_agents/README.md](external_agents/README.md)** - External agents system
 - **[docs/DEVELOPMENT_HISTORY.md](docs/DEVELOPMENT_HISTORY.md)** - Development context
 - **[docs/CONTEXT_FOR_AI.md](docs/CONTEXT_FOR_AI.md)** - AI assistant context
 
@@ -209,16 +235,17 @@ docker-compose logs postgres
 
 ## 🎨 Features
 
-✅ A2A Protocol Support  
-✅ LLM Intent Classification (multi-provider)  
-✅ Streaming Responses (SSE)  
-✅ Conversation Memory  
-✅ Agent-to-Agent Communication  
-✅ Interactive Console App  
-✅ PostgreSQL Database  
-✅ Database Migrations (Alembic)  
-✅ Comprehensive Tests  
-✅ Clean Architecture  
+✅ A2A Protocol Support
+✅ LLM Intent Classification (multi-provider)
+✅ Streaming Responses (SSE)
+✅ Conversation Memory
+✅ Agent-to-Agent Communication
+✅ External Agents System (Weather, Insurance)
+✅ Interactive Console App
+✅ PostgreSQL Database
+✅ Database Migrations (Alembic)
+✅ Comprehensive Tests
+✅ Clean Architecture
 
 ## 📝 Next Steps
 

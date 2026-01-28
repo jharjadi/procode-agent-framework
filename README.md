@@ -40,6 +40,7 @@ This isn't just another chatbot wrapper. It's a comprehensive framework that sol
 - **Production Security**: Enterprise API key auth, rate limiting, CORS restriction, PII detection, audit logging
 - **Real-time Streaming**: Server-Sent Events for responsive user experience
 - **Agent-to-Agent Communication**: Built on the A2A protocol for multi-agent workflows
+- **External Agents System**: Plug-and-play architecture for integrating specialized external agents
 - **Docker Ready**: One-command deployment with docker-compose
 
 ## Current Capabilities (Step 11/25)
@@ -52,6 +53,7 @@ This isn't just another chatbot wrapper. It's a comprehensive framework that sol
 - **Audit Logging**: Dual persistence (files + database) for compliance
 - **Streaming Responses**: Real-time SSE with progress indicators
 - **Tool Integration**: GitHub Issues API with hybrid mocked/real modes
+- **External Agents**: Weather Agent (OpenWeatherMap API) and Insurance Agent (complex routing pattern)
 
 ### Security & Compliance
 - **Enterprise API Keys**: Organization-based API key management with scopes, rate limits, and usage tracking
@@ -92,6 +94,8 @@ open http://localhost:3001
 - Frontend UI: http://localhost:3001
 - Agent API: http://localhost:9998
 - PostgreSQL: localhost:5433
+- Weather Agent: http://localhost:9996 (external)
+- Insurance Agent: http://localhost:9997 (external)
 
 **Stop services:**
 ```bash
@@ -141,28 +145,41 @@ The multi-LLM classifier automatically routes simple queries (greetings, basic i
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Principal Agent                       │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │  Intent Classifier (Multi-LLM)                   │  │
-│  │  - Complexity analysis                           │  │
-│  │  - Model selection (Gemini/GPT-4)               │  │
-│  │  - Deterministic fallback                        │  │
-│  └──────────────────────────────────────────────────┘  │
-│                          │                               │
-│         ┌────────────────┼────────────────┐            │
-│         ▼                ▼                ▼             │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐        │
-│  │ Tickets  │    │ Account  │    │ Payments │        │
-│  │  Agent   │    │  Agent   │    │  Agent   │        │
-│  └──────────┘    └──────────┘    └──────────┘        │
-└─────────────────────────────────────────────────────────┘
-         │                 │                 │
-         ▼                 ▼                 ▼
-  ┌──────────┐      ┌──────────┐     ┌──────────┐
-  │ GitHub   │      │ Database │     │ Guardrails│
-  │   API    │      │  Layer   │     │ & Audit   │
-  └──────────┘      └──────────┘     └──────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Principal Agent                              │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │  Intent Classifier (Multi-LLM)                               │  │
+│  │  - Complexity analysis                                       │  │
+│  │  - Model selection (Gemini/GPT-4)                           │  │
+│  │  - Deterministic fallback                                    │  │
+│  │  - External agent routing (insurance, weather)              │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                          │                                           │
+│         ┌────────────────┼────────────────┬──────────────┐         │
+│         ▼                ▼                ▼              ▼          │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐   ┌──────────┐     │
+│  │ Tickets  │    │ Account  │    │ Payments │   │ General  │     │
+│  │  Agent   │    │  Agent   │    │  Agent   │   │  Agent   │     │
+│  └──────────┘    └──────────┘    └──────────┘   └──────────┘     │
+└─────────────────────────────────────────────────────────────────────┘
+         │                 │                 │              │
+         ▼                 ▼                 ▼              ▼
+  ┌──────────┐      ┌──────────┐     ┌──────────┐  ┌──────────────┐
+  │ GitHub   │      │ Database │     │ Guardrails│  │   External   │
+  │   API    │      │  Layer   │     │ & Audit   │  │    Agents    │
+  └──────────┘      └──────────┘     └──────────┘  └──────┬───────┘
+                                                            │
+                                    ┌───────────────────────┴────────────┐
+                                    ▼                                    ▼
+                          ┌──────────────────┐              ┌──────────────────┐
+                          │  Weather Agent   │              │ Insurance Agent  │
+                          │  (Port 9996)     │              │  (Port 9997)     │
+                          │                  │              │                  │
+                          │  • Principal     │              │  • Principal     │
+                          │  • OpenWeather   │              │  • Info Agent    │
+                          │    API           │              │  • Creation      │
+                          │  • Caching       │              │    Agent         │
+                          └──────────────────┘              └──────────────────┘
 ```
 
 ## Documentation
@@ -178,6 +195,7 @@ The multi-LLM classifier automatically routes simple queries (greetings, basic i
 - [Database Integration](docs/DATABASE_INTEGRATION.md) - Persistence layer (Step 10)
 - [API Security](docs/API_SECURITY.md) - Rate limiting, API keys, CORS (Step 12)
 - [A2A Communication](docs/A2A_COMMUNICATION.md) - Agent-to-agent protocol
+- [External Agents System](external_agents/README.md) - Plug-and-play external agents architecture
 
 ### Implementation
 - [Cost Optimization Summary](docs/COST_OPTIMIZATION_SUMMARY.md) - Quick reference
@@ -276,6 +294,9 @@ ENABLE_API_SECURITY=false  # Set to true for production
 DEMO_API_KEY=your-secure-key  # Generate with: openssl rand -hex 32
 RATE_LIMIT_PER_MINUTE=10
 ALLOWED_ORIGINS=https://yourdomain.com
+
+# External Agents
+OPENWEATHER_API_KEY=your-openweather-key  # For Weather Agent
 
 # Tool Integration (optional)
 USE_REAL_TOOLS=false
@@ -378,7 +399,17 @@ procode-agent-framework/
 ├── tasks/                 # Task-specific agents
 │   ├── task_tickets.py   # Support tickets
 │   ├── task_account.py   # Account management
-│   └── task_payments.py  # Payment operations
+│   ├── task_payments.py  # Payment operations
+│   └── task_general.py   # General queries
+├── a2a_comm/             # Agent-to-Agent communication
+│   ├── agent_client.py   # A2A client for external agents
+│   ├── agent_discovery.py # Agent registry
+│   └── agent_orchestrator.py # Multi-agent coordination
+├── external_agents/      # External agents system
+│   ├── shared/          # Shared infrastructure
+│   ├── weather_agent/   # Weather Agent (OpenWeatherMap)
+│   ├── insurance_agent/ # Insurance Agent (complex routing)
+│   └── docs/           # External agents documentation
 ├── frontend/             # Next.js web interface
 ├── docs/                 # Comprehensive documentation
 └── tests/                # Test suite
@@ -411,7 +442,16 @@ Copyright (c) 2026 Jimmy Harjadi
 
 ## Recent Updates
 
-**Step 11: API Key Authentication** ✅ Just completed!
+**External Agents System** ✅ Just completed!
+- Plug-and-play architecture for integrating specialized external agents
+- Weather Agent with real OpenWeatherMap API integration and caching
+- Insurance Agent demonstrating complex routing pattern (Principal + 2 Task Agents)
+- Automatic intent routing to external agents
+- A2A protocol-based communication
+- Comprehensive documentation and development guides
+- Docker-ready with separate containers per agent
+
+**Step 11: API Key Authentication** ✅ Previously completed!
 - Enterprise-grade API key management system
 - Organization-based multi-tenancy support
 - Cryptographically secure key generation (SHA-256 hashing)
