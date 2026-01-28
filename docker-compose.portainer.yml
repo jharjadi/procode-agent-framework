@@ -84,6 +84,12 @@ services:
       PYTHONPATH: /app
     ports:
       - "9996:9996"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s = socket.socket(); s.connect(('localhost', 9996)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - procode-network
     restart: unless-stopped
@@ -98,6 +104,12 @@ services:
       PYTHONPATH: /app
     ports:
       - "9997:9997"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s = socket.socket(); s.connect(('localhost', 9997)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - procode-network
     restart: unless-stopped
