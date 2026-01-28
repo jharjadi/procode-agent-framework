@@ -68,13 +68,17 @@ class ProcodeAgentRouter(AgentExecutor):
     
     def _load_external_agents_config(self):
         """Load external agents from configuration file."""
-        config_path = "config/external_agents.json"
+        # Check environment variable first, fallback to default
+        config_path = os.getenv("EXTERNAL_AGENTS_CONFIG", "config/external_agents.json")
+        
         if os.path.exists(config_path):
             try:
                 self.agent_registry._load_from_file(config_path)
                 print(f"✓ Loaded external agents configuration from {config_path}")
             except Exception as e:
                 print(f"⚠️ Failed to load external agents config: {e}")
+        else:
+            print(f"⚠️ External agents config not found: {config_path}")
 
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         # Get conversation memory
