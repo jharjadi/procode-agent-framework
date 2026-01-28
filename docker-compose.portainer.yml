@@ -38,8 +38,9 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       
-      # External Agents
+      # External Agents Configuration
       OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
+      EXTERNAL_AGENTS_CONFIG: ${EXTERNAL_AGENTS_CONFIG:-config/external_agents.production.json}
       
       # Configuration
       USE_LLM_INTENT: "true"
