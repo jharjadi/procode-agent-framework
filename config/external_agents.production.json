@@ -1,0 +1,36 @@
+{
+  "agents": [
+    {
+      "name": "weather_agent",
+      "description": "Weather information agent with OpenWeatherMap API integration",
+      "url": "http://weather-agent:9996",
+      "intents": ["weather"],
+      "enabled": true,
+      "timeout": 30,
+      "retry_attempts": 3,
+      "health_check_interval": 60
+    },
+    {
+      "name": "insurance_agent",
+      "description": "Insurance policy management agent with complex routing pattern",
+      "url": "http://insurance-agent:9997",
+      "intents": ["insurance"],
+      "enabled": true,
+      "timeout": 30,
+      "retry_attempts": 3,
+      "health_check_interval": 60
+    }
+  ],
+  "discovery": {
+    "enabled": true,
+    "refresh_interval": 300,
+    "health_check_enabled": true
+  },
+  "communication": {
+    "protocol": "a2a",
+    "version": "1.0",
+    "timeout": 30,
+    "max_retries": 3,
+    "retry_delay": 1
+  }
+}
