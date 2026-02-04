@@ -17,3 +17,5 @@ ENHANCED RULES SYSTEM:
 - Check docs/project-notes/ for task-specific context
 - Update project notes as you work, not after completion
 2. Test the enhanced rules system after implementation
+
+2. Phase 2 Skills System implementation in progress - creating automation tools for techdebt, context, review, performance, and security

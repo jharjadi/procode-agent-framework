@@ -360,6 +360,7 @@ This file serves as a persistent reference for development rules. When starting 
 
 ## Hypervelocity Best Practices
 
+- ❗ **NEW**: Phase 2 Skills System implementation in progress - creating automation tools for techdebt, context, review, performance, and security
 ### 1. Always Use Makefile Commands
 ```bash
 # ✅ GOOD - Consistent, documented, reliable
