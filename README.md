@@ -20,8 +20,147 @@ Rather than relying on opaque abstractions or "fully autonomous" claims, this pr
 - **observable behavior**
 - **realistic operational constraints**
 
-It is **not a toy demo** — but it is also **not a finished product**.  
+It is **not a toy demo** — but it is also **not a finished product**.
 It's a system being built step by step, in public, with trade-offs documented along the way.
+
+---
+
+## 🚀 New: AI-Assisted Development Toolkit
+
+**This project includes a complete AI-assisted development toolkit** — a practical implementation of Claude Code Creator best practices that helps you build better software faster.
+
+### 21 Prompt Patterns for Better AI Collaboration
+
+Stop guessing how to work with AI. Use proven patterns:
+
+```bash
+# See all available patterns
+make show-prompts
+```
+
+**Verification Patterns** — Prove your code works before merging:
+- 🎯 **Prove It Works** — Demand concrete evidence (tests, benchmarks, edge cases)
+- 📊 **Show Me The Tests** — Verify test coverage and quality
+- ✅ **Code Review Checklist** — Self-review against standards
+- 🔄 **Compare Branches** — Verify behavior changes between branches
+
+**Debugging Patterns** — Find and fix issues systematically:
+- 🔍 **Root Cause Analysis** — Investigate bugs methodically
+- 🐛 **Rubber Duck Debug** — Explain the problem to find the solution
+- 📈 **Performance Optimization** — Measure, optimize, verify
+
+**Planning Patterns** — Design before you code:
+- 📋 **Detailed Specification** — Turn vague ideas into clear specs
+- 🏗️ **Architecture Decision** — Document technical choices
+- 🧩 **Break Down Complex Task** — Split large tasks into steps
+
+[**See all 21 patterns →**](docs/PROMPT_PATTERNS.md)
+
+### 5 Automation Tools for Code Quality
+
+Built-in scripts that analyze your codebase:
+
+```bash
+# Find technical debt
+make techdebt
+
+# Aggregate project context for AI
+make context
+
+# Automated code review
+make review
+
+# Find performance bottlenecks
+make optimize
+
+# Security vulnerability scanning
+make security-scan
+```
+
+### 3 Auto-Debug Tools
+
+Intelligent debugging that extracts and analyzes errors:
+
+```bash
+# Extract and analyze the last error from logs
+make debug-last-error
+
+# Analyze failing tests with fix suggestions
+make debug-failing-tests
+
+# Debug Docker containers with error correlation
+make docker-debug
+```
+
+**Example output:**
+```markdown
+## Error Analysis
+Pattern: ModuleNotFoundError
+Category: dependency
+Severity: high
+
+## Root Cause
+Missing Python package in environment
+
+## Suggested Solutions
+1. Install missing package: pip install <package>
+2. Add to requirements.txt
+3. Rebuild Docker container if needed
+```
+
+### Dynamic Learning System
+
+The framework learns from your mistakes:
+
+```bash
+# Capture a learning after fixing a bug
+make update-rules MSG="Always test Docker builds before committing"
+
+# Validate compliance with development rules
+make validate-rules
+```
+
+Learnings are automatically:
+- ✅ Stored in [`docs/lessons-learned/`](docs/lessons-learned/)
+- ✅ Indexed for easy discovery
+- ✅ Applied to future development
+
+### Why This Matters
+
+**Traditional development:**
+- ❌ Vague prompts → inconsistent results
+- ❌ Manual debugging → slow iteration
+- ❌ Repeat mistakes → wasted time
+- ❌ No code quality checks → technical debt
+
+**With this toolkit:**
+- ✅ Proven patterns → predictable results
+- ✅ Automated analysis → fast debugging
+- ✅ Captured learnings → continuous improvement
+- ✅ Built-in quality checks → cleaner code
+
+### Get Started
+
+```bash
+# Clone and explore
+git clone https://github.com/jharjadi/procode-agent-framework.git
+cd procode-agent-framework
+
+# See available development tools
+make help
+
+# View prompt patterns
+make show-prompts
+
+# Run code quality analysis
+make techdebt
+```
+
+**Learn more:**
+- 📚 [Complete Prompt Patterns Library](docs/PROMPT_PATTERNS.md) (21 patterns)
+- 🏗️ [Architect Mode Templates](.roo/rules-architect/prompt-templates.md) (6 templates)
+- 💻 [Code Mode Templates](.roo/rules-code/prompt-templates.md) (7 templates)
+- 📖 [Development Rules](DEVELOPMENT_RULES.md) (Complete guide)
 
 ---
 
